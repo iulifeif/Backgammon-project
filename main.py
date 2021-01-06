@@ -3,194 +3,140 @@ import random
 
 
 class Backgammon:
-    # table is formed by down side of game table reversed plus up side
-    #     player0: human who wants to play with positive pieces
-    #       player0 move <--<--
-    #     player1: human or computer with negative pieces
-    #         player1 move -->-->
-
-    def __init__(self, dice1=0, dice2=0, table=None, player=0, home_player0=0, home_player1=0):
-        self.dice_first = dice1
-        self.dice_second = dice2
+    # initializarea starii
+    def __init__(self, player=0, table=None, dice1=0, dice2=0, end_pieces_0=0, end_pieces_1=0, out_pieces_0=0, out_pieces_1=0):
+        self.player = player
         if table is None:
             self.table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
         else:
             self.table = copy.deepcopy(table)
-        self.player = player
-        self.home_player0 = home_player0
-        self.home_player1 = home_player1
+        self.first_dice = dice1
+        self.second_dice = dice2
+        self.end_pieces_0 = end_pieces_0
+        self.end_pieces_1 = end_pieces_1
+        self.out_pieces_0 = out_pieces_0
+        self.out_pieces_1 = out_pieces_1
+        self.player_sign = {0: lambda a, b: a <= b,
+                            1: lambda a, b: a >= b}
 
-    def roll_the_dice(self):
-        self.dice_first = random.randint(1, 6)
-        self.dice_second = random.randint(1, 6)
-
-    def view_table(self):
+    # printarea tablei de joc (cu tot cu indicii pozitiilor)
+    def print_table(self):
         print([indices for indices in range(len(self.table))])
         print(self.table)
 
-    def move(self, dice, position_piece):
-        temporary_state = Backgammon(self.dice_first, self.dice_second, self.table, self.player, self.home_player1,
-                                     self.home_player2)
+    # initializarea zarurilor
+    def roll_dices(self):
+        self.first_dice = random.randint(1, 6)
+        self.second_dice = random.randint(1, 6)
 
-        # if is human
-        if self.player == 0 and self.table[position_piece] < 0:
-            end_position = position_piece - dice
-            if self.table[end_position] <= 0:
-                # remove the piece from the starting place
-                temporary_state.table[position_piece] += 1
-                # add the piece
-                temporary_state.table[end_position] -= 1
-            elif self.table[end_position] == 1:
-                # remove the piece from the starting place
-                temporary_state.table[position_piece] += 1
-                # add the piece
-                temporary_state.table[end_position] = -1
-            else:
-                return None
+    # verifica daca unul dintre jucatori a terminat jocul (daca a scos toate piesele)
+    def end_game(self):
+        return self.end_pieces_1 == 10 or self.end_pieces_0 == 10
 
-        # if is computer
-        elif self.player == 1 and self.table[position_piece] > 0:
-            end_position = position_piece + dice
-            if self.table[end_position] >= 0:
-                # remove the piece from the starting place
-                temporary_state.table[position_piece] -= 1
-                # add the piece
-                temporary_state.table[end_position] += 1
-            elif self.table[end_position] == -1:
-                # remove the piece from the starting place
-                temporary_state.table[position_piece] -= 1
-                # add the piece
-                temporary_state.table[end_position] = 1
-            else:
-                return None
-        else:
-            return None
+    def switch_player(self):
+        print("Tura ta s-a terminat")
+        self.player = (self.player + 1) % 2
 
-        if temporary_state.dice_first == dice:
-            temporary_state.dice_first = 0
-        elif temporary_state.dice_second == dice:
-            temporary_state.dice_second = 0
-        else:
-            return None
-        return temporary_state
+    def need_to_put_in_house(self):
+        return self.player == 0 and self.out_pieces_0 and \
+               (self.table[self.first_dice - 1] <= 1 or self.table[self.second_dice - 1] <= 1) or \
+               self.player == 1 and self.out_pieces_1 and \
+               (self.table[24 - self.first_dice] >= 1 or self.table[24 - self.second_dice] >= 1)
 
-    def pieces_out(self):
-        pieces = 0
-        for index in range(len(self.table)):
-            if (self.player == 0 and self.table[index] < 0) or \
-                    (self.player == 1 and self.table[index] > 0):
-                pieces += self.table[index]
-        if self.player == 0:
-            pieces += self.home_player0
-        else:
-            pieces += self.home_player1
-        return abs(pieces)
-
+    # adauga cu zarul "dice" in casa playerului care este la mutare
     def add_in_house(self, dice):
-        temporary_state = Backgammon(self.dice_first, self.dice_second, self.table, self.player, self.home_player1,
-                                     self.home_player2)
-        if self.player == 0:
-            # if the box in occupied by player1
-            if temporary_state.table[dice - 1] <= 0:
-                temporary_state.table[dice - 1] -= 1
-            # if the box is occupied by a single piece of the player2
-            elif temporary_state.table[dice - 1] == 1:
-                temporary_state.table[dice - 1] = -1
+        new_state = Backgammon(self.player, self.table, self.first_dice, self.second_dice, self.end_pieces_0,
+                               self.end_pieces_1, self.out_pieces_0, self.out_pieces_1)
+        position = dice - 1 if self.player == 0 else 24 - dice
+        piece_sign = 1 if self.player == 0 else -1
+
+        if self.player_sign[self.player](new_state.table[position], 0):
+            # daca pe pozitia respectiva sunt piese de acelasi fel sau nu e niciuna
+            new_state.table[position] -= piece_sign
+            if not self.player:
+                new_state.out_pieces_0 -= 1
             else:
-                return None
-        elif self.player == 1:
-            position_in_home = len(temporary_state.table) - dice + 1
-            if temporary_state.table[position_in_home] >= 0:
-                temporary_state.table[position_in_home] += 1
-            elif temporary_state.table[position_in_home] == -1:
-                temporary_state.table[position_in_home] = 1
-            else:
-                return None
-        if temporary_state.dice_first == dice:
-            temporary_state.dice_first = 0
-        elif temporary_state.dice_second == dice:
-            temporary_state.dice_second = 0
+                new_state.out_pieces_1 -= 1
+        elif new_state.table[position] == piece_sign:
+            # daca este o singura piesa de cealalta culoare
+            new_state.table[position] = -1 * piece_sign
+            new_state.out_pieces_0 -= piece_sign
+            new_state.out_pieces_1 += piece_sign
         else:
             return None
-        return temporary_state
+        if self.first_dice and self.first_dice == dice:
+            self.first_dice = 0
+        elif self.second_dice and self.second_dice == dice:
+            self.second_dice = 0
+        return new_state
 
-    def player_can_move(self):
-        if not self.dice_first and not self.dice_second:
+    def can_move(self):
+        if not self.first_dice and not self.second_dice:
             return 0
         for position in range(len(self.table)):
             if self.player == 0 and self.table[position] < 0 and \
-                    (self.table[position - self.dice_first] < 0 or self.table[position - self.dice_first] == 1):
+                    (self.table[position - self.first_dice] <= 1 or self.table[position - self.second_dice] <= 1):
                 return 1
-            if self.player == 0 and self.table[position] < 0 and \
-                    (self.table[position - self.dice_second] < 0 or self.table[position - self.dice_second] == 1):
-                return 1
-            if self.player == 1 and self.table[position] > 0 and \
-                    (self.table[position + self.dice_first] > 0 or self.table[position + self.dice_first] == -1):
-                return 1
-            if self.player == 1 and self.table[position] > 0 and \
-                    (self.table[position + self.dice_second] > 0 or self.table[position + self.dice_second] == -1):
+            elif self.player == 1 and self.table[position] > 1 and \
+                    (self.table[position + self.first_dice] >= -1 or self.table[position + self.second_dice] >= -1):
                 return 1
         return 0
 
-    def player_can_add_in_house(self):
-        if self.player == 0 and self.dice_first and self.table[self.dice_first - 1] <= 1:
-            return 1
-        if self.player == 0 and self.dice_second and self.table[self.dice_second - 1] <= 1:
-            return 1
-        if self.player == 1 and self.dice_first and self.table[self.dice_first - 1] >= -1:
-            return 1
-        if self.player == 1 and self.dice_second and self.table[self.dice_second - 1] >= -1:
-            return 1
-        return 0
+    def move(self, start_position, dice):
+        new_state = Backgammon(self.player, self.table, self.first_dice, self.second_dice,
+                                     self.end_pieces_0, self.end_pieces_1, self.out_pieces_0, self.out_pieces_1)
+        position = start_position - dice if self.player == 0 else start_position + dice
+        piece_sign = 1 if self.player == 0 else -1
+        end_position = 0 if self.player == 0 else 24
 
-    def end_game(self):
-        return self.home_player0 == 10 or self.home_player1 == 10
-
-    def all_pieces_in_house(self):
-        pass
-
-
-def play_game():
-    game = Backgammon()
-    game.view_table()
-    # cat timp jocul nu s-a terminat
-    while not game.end_game():
-        # afiseaza ce player joaca
-        print("Player {}: ".format(game.player))
-        # da cu zarul
-        game.roll_the_dice()
-        # se afiseaza zarurile
-        print("Zarurile tale sunt: {}, {}".format(game.dice_first, game.dice_second))
-        # cazul cand are piese afara
-        if game.pieces_out() != 10 and game.player_can_add_in_house():
-            game.add_in_house(game.dice_first)
-        if game.pieces_out() != 10 and game.player_can_add_in_house():
-            game.add_in_house(game.dice_second)
-        if game.player_can_move():
-            # move for first dice
-            while game.dice_first:
-                start = int(input("Pozitia de la care vrei sa faci mutarea pt zarul1: "))
-                temporary_game = game.move(game.dice_first, start)
-                if temporary_game is not None:
-                    game = temporary_game
-                else:
-                    print("Ai introdus o pozitie gresita!")
-            game.view_table()
-
-            # move for second dice
-            while game.dice_second:
-                start = int(input("Pozitia de la care vrei sa faci mutarea pt zarul2: "))
-                temporary_game = game.move(game.dice_second, start)
-                if temporary_game is not None:
-                    game = temporary_game
-                else:
-                    print("Ai introdus o pozitie gresita!")
-            game.view_table()
+        new_state.table[start_position] += piece_sign
+        if position == end_position:
+            if self.player == 0:
+                new_state.end_pieces_0 += 1
+            else:
+                new_state.end_pieces_1 += 1
+        elif self.player_sign[self.player](new_state.table[position], 0):
+            new_state.table[position] -= piece_sign
+        elif new_state.table[position] == piece_sign:
+            new_state.table[position] = -1 * piece_sign
+            if self.player == 0:
+                new_state.out_pieces_1 += 1
+            else:
+                new_state.out_pieces_0 += 1
         else:
-            print("Nu ai mutari valide!")
-        print("S-a terminat tura")
-        game.player = (game.player + 1) % 2
+            return None
+
+        if new_state.first_dice == dice and new_state.first_dice:
+            new_state.first_dice = 0
+        elif new_state.second_dice == dice and new_state.second_dice:
+            new_state.second_dice = 0
+        else:
+            return None
+
+        return new_state
+
+
+def play_game2():
+    game = Backgammon()
+    while not game.end_game():
+        print("Acum joaca playerul: {}".format(game.player))
+        game.roll_dices()
+        print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
+        print("Tabla de start: ")
+        game.print_table()
+        while game.need_to_put_in_house():
+            number_dice = int(input("Cu ce zar vrei sa intrii in casa?: "))
+            game = game.add_in_house(number_dice)
+            print("Tabla dupa ce a intrat cu piesa in casa: ")
+            game.print_table()
+        while game.can_move():
+            position = int(input("Pozitia de la care vrei sa muti piesa: "))
+            number_dice = int(input("Cu ce zar vrei sa muti piesa?: "))
+            game = game.move(position, number_dice)
+            print("Tabla dupa ce a mutat piesa: ")
+            game.print_table()
+        game.switch_player()
 
 
 if __name__ == '__main__':
-    play_game()
+    play_game2()

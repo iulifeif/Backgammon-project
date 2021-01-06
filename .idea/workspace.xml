@@ -120,7 +120,7 @@
       <workItem from="1608887212501" duration="8612000" />
       <workItem from="1609577154352" duration="361000" />
       <workItem from="1609842004198" duration="4856000" />
-      <workItem from="1609936066366" duration="8499000" />
+      <workItem from="1609936066366" duration="10195000" />
     </task>
     <servers />
   </component>
@@ -135,13 +135,17 @@
         <watch expression="game.dices_in_home()" language="Python" />
         <watch expression="game.dice_second" language="Python" />
         <watch expression="game.dice_first" language="Python" />
+        <watch expression="game.second_dice" language="Python" />
+        <watch expression="game.first_dice" language="Python" />
         <watch expression="game.first_dice" language="Python" />
         <watch expression="game.second_dice" language="Python" />
+        <watch expression="game.need_to_put_in_house()" language="Python" />
+        <watch expression="game.can_move()" language="Python" />
       </configuration>
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Backgammon_project$rewrite.coverage" NAME="rewrite Coverage Results" MODIFIED="1609856313205" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Backgammon_project$rewrite.coverage" NAME="rewrite Coverage Results" MODIFIED="1609946797933" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/project$main.coverage" NAME="main Coverage Results" MODIFIED="1607089575085" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Backgammon_project$test_pygame.coverage" NAME="test-pygame Coverage Results" MODIFIED="1609856303482" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
