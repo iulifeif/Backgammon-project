@@ -1,5 +1,79 @@
 import copy
 import random
+import pygame
+import sys
+import numpy as np
+
+pygame.init()
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BROWN = (150, 75, 0)
+
+
+class Interface:
+    def __init__(self, table):
+        self.squaresize = 50
+        self.column_count = 12
+        self.row_count = 20
+        self.width = self.squaresize * (self.column_count + 1)
+        self.height = self.squaresize * self.row_count
+        self.size = (self.width, self.height)
+        self.radius = int(self.squaresize / 2 - 5)
+        self.screen = pygame.display.set_mode(self.size)
+        self.board = self.create_board()
+        self.draw_board(self.board, table)
+        pygame.display.update()
+
+    def create_board(self):
+        board = np.zeros((self.row_count, self.column_count))
+        return board
+
+    def prepro(self, table):
+        self.up_table = table[len(table) // 2:]
+        intermediar_down_table = table[:len(table) // 2]
+        self.down_table = []
+        for pos in reversed(range(len(intermediar_down_table))):
+            self.down_table.append(intermediar_down_table[pos])
+
+    def draw_pieces(self, table, pos):
+        for col in range(len(table)):
+            line = pos
+            while table[col] != 0:
+                if table[col] < 0:
+                    pygame.draw.circle(self.screen, BROWN,
+                                       (int(col * self.squaresize + self.squaresize / 2),
+                                        int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
+                                       self.radius)
+                    table[col] += 1
+                elif table[col] > 0:
+                    pygame.draw.circle(self.screen, WHITE,
+                                       (int(col * self.squaresize + self.squaresize / 2),
+                                        int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
+                                       self.radius)
+                    table[col] -= 1
+
+                line = line + 1 if pos == 0 else line - 1
+
+    def draw_board(self, board, table):
+        for index_column in range(self.column_count):
+            for index_line in range(self.row_count):
+                pygame.draw.rect(self.screen,
+                                 GREEN,
+                                 (index_column * self.squaresize,
+                                  index_line * self.squaresize + self.squaresize,
+                                  self.squaresize,
+                                  self.squaresize))
+                pygame.draw.circle(self.screen,
+                                   BLACK,
+                                   (int(index_column * self.squaresize + self.squaresize / 2),
+                                    int(index_line * self.squaresize + self.squaresize + self.squaresize / 2)),
+                                   self.radius)
+        up_table, down_table = self.prepro(table)
+        self.draw_pieces(up_table, 0)
+        self.draw_pieces(down_table, 18)
 
 
 class Backgammon:
@@ -144,3 +218,13 @@ def play_game():
 
 if __name__ == '__main__':
     play_game()
+    table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
+    game_over = False
+    interf = Interface(table)
+    while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print(event.pos)
