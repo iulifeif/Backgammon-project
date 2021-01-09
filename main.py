@@ -116,7 +116,7 @@ class Backgammon:
         return new_state
 
 
-def play_game2():
+def play_game():
     game = Backgammon()
     while not game.end_game():
         print("Acum joaca playerul: {}".format(game.player))
@@ -136,7 +136,11 @@ def play_game2():
             print("Tabla dupa ce a mutat piesa: ")
             game.print_table()
         game.switch_player()
+    if game.end_pieces_1 == 10:
+        print("Jucatorul 1 a castigat!")
+    elif game.end_pieces_0 == 10:
+        print("Jucatorul 0 a castigat!")
 
 
 if __name__ == '__main__':
-    play_game2()
+    play_game()
