@@ -76,10 +76,32 @@ if __name__ == '__main__':
     board = create_board()
     draw_board(board, table)
     pygame.display.update()
+    selected_piece = 0
     while not game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over = True
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                print(event.pos)
+            # if event.type == pygame.MOUSEBUTTONDOWN and not selected_piece:
+            #     x, y = event.pos
+            #     x = int(x % 50)
+            #     x = 0 if x <= 9 else:1
+            #     y = int(y % 50)
+            #     pygame.draw.circle(screen, RED,
+            #                        (int(y * SQUARESIZE + SQUARESIZE / 2),
+            #                         int(x * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
+            #                        RADIUS)
+            #     pygame.display.update()
+            #     pygame.display.flip()
+            #     selected_piece = 1
+            # if event.type == pygame.MOUSEBUTTONDOWN and selected_piece:
+            #     x, y = event.pos
+            #     x = int(x % 50)
+            #     y = int(y % 50)
+            #     pygame.draw.circle(screen, WHITE,
+            #                        (int(y * SQUARESIZE + SQUARESIZE / 2),
+            #                         int(x * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
+            #                        RADIUS)
+            #     pygame.display.update()
+            #     pygame.display.flip()
+            #     selected_piece = 0

@@ -28,8 +28,7 @@ class Interface:
         pygame.display.update()
 
     def create_board(self):
-        board = np.zeros((self.row_count, self.column_count))
-        return board
+        return np.zeros((self.row_count, self.column_count))
 
     def prepro(self, table):
         self.up_table = table[len(table) // 2:]
@@ -71,9 +70,9 @@ class Interface:
                                    (int(index_column * self.squaresize + self.squaresize / 2),
                                     int(index_line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                    self.radius)
-        up_table, down_table = self.prepro(table)
-        self.draw_pieces(up_table, 0)
-        self.draw_pieces(down_table, 18)
+        self.prepro(table)
+        self.draw_pieces(self.up_table, 0)
+        self.draw_pieces(self.down_table, 18)
 
 
 class Backgammon:
@@ -192,7 +191,15 @@ class Backgammon:
 
 def play_game():
     game = Backgammon()
-    while not game.end_game():
+    game_over = False
+    interf = Interface(game.table)
+    board = interf.create_board()
+    while not game.end_game() and not game_over:
+        interf.draw_board(board, game.table)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                sys.exit()
         print("Acum joaca playerul: {}".format(game.player))
         game.roll_dices()
         print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
@@ -218,13 +225,3 @@ def play_game():
 
 if __name__ == '__main__':
     play_game()
-    table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
-    game_over = False
-    interf = Interface(table)
-    while not game_over:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                print(event.pos)
