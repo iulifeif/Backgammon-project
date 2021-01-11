@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 import pygame
 import sys
@@ -115,16 +116,16 @@ class Backgammon:
                (self.table[24 - self.first_dice] >= 1 or self.table[24 - self.second_dice] >= 1)
 
     # adauga cu zarul "dice" in casa playerului care este la mutare
-    def add_in_house(self, dice):
+    def add_in_house(self, position):
         new_state = Backgammon(self.player, self.table, self.first_dice, self.second_dice, self.end_pieces_0,
                                self.end_pieces_1, self.out_pieces_0, self.out_pieces_1)
-        position = dice - 1 if self.player == 0 else 24 - dice
-        piece_sign = 1 if self.player == 0 else -1
+        # position = dice - 1 if self.player == 0 else 24 - dice
+        piece_sign = 1 if new_state.player == 0 else -1
 
-        if self.player_sign[self.player](new_state.table[position], 0):
+        if new_state.player_sign[new_state.player](new_state.table[position], 0):
             # daca pe pozitia respectiva sunt piese de acelasi fel sau nu e niciuna
             new_state.table[position] -= piece_sign
-            if not self.player:
+            if not new_state.player:
                 new_state.out_pieces_0 -= 1
             else:
                 new_state.out_pieces_1 -= 1
@@ -135,10 +136,13 @@ class Backgammon:
             new_state.out_pieces_1 += piece_sign
         else:
             return None
-        if self.first_dice and self.first_dice == dice:
-            self.first_dice = 0
-        elif self.second_dice and self.second_dice == dice:
-            self.second_dice = 0
+
+        dice = 24 - position if new_state.player == 0 else position + 1
+
+        if new_state.first_dice and new_state.first_dice == dice:
+            new_state.first_dice = 0
+        elif new_state.second_dice and new_state.second_dice == dice:
+            new_state.second_dice = 0
         return new_state
 
     def can_move(self):
@@ -153,30 +157,29 @@ class Backgammon:
                 return 1
         return 0
 
-    def move(self, start_position, dice):
+    def move(self, start_position, end_position):
         new_state = Backgammon(self.player, self.table, self.first_dice, self.second_dice,
                                      self.end_pieces_0, self.end_pieces_1, self.out_pieces_0, self.out_pieces_1)
-        position = start_position - dice if self.player == 0 else start_position + dice
         piece_sign = 1 if self.player == 0 else -1
-        end_position = 0 if self.player == 0 else 24
+        out_position = 0 if self.player == 0 else 24
 
         new_state.table[start_position] += piece_sign
-        if position == end_position:
-            if self.player == 0:
+        if end_position == out_position:
+            if new_state.player == 0:
                 new_state.end_pieces_0 += 1
             else:
                 new_state.end_pieces_1 += 1
-        elif self.player_sign[self.player](new_state.table[position], 0):
-            new_state.table[position] -= piece_sign
-        elif new_state.table[position] == piece_sign:
-            new_state.table[position] = -1 * piece_sign
-            if self.player == 0:
+        elif new_state.player_sign[new_state.player](new_state.table[end_position], 0):
+            new_state.table[end_position] -= piece_sign
+        elif new_state.table[end_position] == piece_sign:
+            new_state.table[end_position] = -1 * piece_sign
+            if new_state.player == 0:
                 new_state.out_pieces_1 += 1
             else:
                 new_state.out_pieces_0 += 1
         else:
             return None
-
+        dice = abs(end_position - start_position)
         if new_state.first_dice == dice and new_state.first_dice:
             new_state.first_dice = 0
         elif new_state.second_dice == dice and new_state.second_dice:
@@ -187,8 +190,19 @@ class Backgammon:
         return new_state
 
 
-def position_in_table(line, col):
-    if line == 0:
+def click_for_position():
+    col = -1
+    while col == -1:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                col, line = event.pos
+                line = int(line / 50)
+                col = int(col / 50)
+                if line < 7:
+                    line = 0
+                elif line > 7:
+                    line = 1
+    if not line:
         return col + 12
     else:
         return 11 - col
@@ -207,34 +221,31 @@ def play_game():
         print("Tabla de start: ")
         game.print_table()
         while game.need_to_put_in_house():
-            number_dice = int(input("Cu ce zar vrei sa intrii in casa?: "))
-            game = game.add_in_house(number_dice)
+
+            # position_home = int(input("Unde vrei sa intrii cu piesa: "))
+            position_home = click_for_position()
+
+            game = game.add_in_house(position_home)
+
             print("Tabla dupa ce a intrat cu piesa in casa: ")
             game.print_table()
+            interf.draw_board(game.table)
         while game.can_move():
-            # position = int(input("Pozitia de la care vrei sa muti piesa: "))
-            position = -1
-            while position == -1:
-                for event in pygame.event.get():
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        col, line = event.pos
-                        print("linia este: {}, col este: {}".format(line, col))
-                        line = int(line / 50)
-                        col = int(col / 50)
-                        print("linia este: {}, col este: {}".format(line, col))
-                        if line < 7:
-                            line = 0
-                            print("da")
-                        elif line > 7:
-                            line = 1
-                            print("nu")
-                        print("linia este: {}, col este: {}".format(line, col))
-                        position = position_in_table(line, col)
-            print("positia este", position)
-            number_dice = int(input("Cu ce zar vrei sa muti piesa?: "))
-            game = game.move(position, number_dice)
+            # position_start = int(input("Pozitia de la care vrei sa muti piesa: "))
+
+            position_start = click_for_position()
+
+            # print("positia start este", position_start)
+
+            position_end = click_for_position()
+
+            # position_end = int(input("Pozitia unde muti?: "))
+            # print("positia end este", position_end)
+
+            game = game.move(position_start, position_end)
             print("Tabla dupa ce a mutat piesa: ")
             game.print_table()
+            interf.draw_board(game.table)
         game.switch_player()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
