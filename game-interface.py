@@ -13,7 +13,7 @@ BROWN = (150, 75, 0)
 
 SQUARESIZE = 50
 COLUMN_COUNT = 12
-ROW_COUNT = 20
+ROW_COUNT = 16
 width = SQUARESIZE * (COLUMN_COUNT + 1)
 height = SQUARESIZE * ROW_COUNT
 size = (width, height)
@@ -65,7 +65,7 @@ def draw_board(board, table):
                                RADIUS)
     up_table, down_table = prepro(table)
     draw_pieces(up_table, 0)
-    draw_pieces(down_table, 18)
+    draw_pieces(down_table, 14)
 
 
 if __name__ == '__main__':
@@ -82,6 +82,8 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 game_over = True
                 sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print(event.pos)
             # if event.type == pygame.MOUSEBUTTONDOWN and not selected_piece:
             #     x, y = event.pos
             #     x = int(x % 50)

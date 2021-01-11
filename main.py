@@ -187,16 +187,20 @@ class Backgammon:
         return new_state
 
 
+def position_in_table(line, col):
+    if line == 0:
+        return col + 12
+    else:
+        return 11 - col
+
+
 def play_game():
     game = Backgammon()
     game_over = False
     interf = Interface(game.table)
     while not game.end_game() and not game_over:
         interf.draw_board(game.table)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-                sys.exit()
+
         print("Acum joaca playerul: {}".format(game.player))
         game.roll_dices()
         print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
@@ -208,12 +212,34 @@ def play_game():
             print("Tabla dupa ce a intrat cu piesa in casa: ")
             game.print_table()
         while game.can_move():
-            position = int(input("Pozitia de la care vrei sa muti piesa: "))
+            # position = int(input("Pozitia de la care vrei sa muti piesa: "))
+            position = -1
+            while position == -1:
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        col, line = event.pos
+                        print("linia este: {}, col este: {}".format(line, col))
+                        line = int(line / 50)
+                        col = int(col / 50)
+                        print("linia este: {}, col este: {}".format(line, col))
+                        if line < 7:
+                            line = 0
+                            print("da")
+                        elif line > 7:
+                            line = 1
+                            print("nu")
+                        print("linia este: {}, col este: {}".format(line, col))
+                        position = position_in_table(line, col)
+            print("positia este", position)
             number_dice = int(input("Cu ce zar vrei sa muti piesa?: "))
             game = game.move(position, number_dice)
             print("Tabla dupa ce a mutat piesa: ")
             game.print_table()
         game.switch_player()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                sys.exit()
     if game.end_pieces_1 == 10:
         print("Jucatorul 1 a castigat!")
     elif game.end_pieces_0 == 10:
