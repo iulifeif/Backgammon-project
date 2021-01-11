@@ -17,18 +17,14 @@ class Interface:
     def __init__(self, table):
         self.squaresize = 50
         self.column_count = 12
-        self.row_count = 20
+        self.row_count = 16
         self.width = self.squaresize * (self.column_count + 1)
         self.height = self.squaresize * self.row_count
         self.size = (self.width, self.height)
         self.radius = int(self.squaresize / 2 - 5)
         self.screen = pygame.display.set_mode(self.size)
-        self.board = self.create_board()
-        self.draw_board(self.board, table)
+        self.draw_board(table)
         pygame.display.update()
-
-    def create_board(self):
-        return np.zeros((self.row_count, self.column_count))
 
     def prepro(self, table):
         self.up_table = table[len(table) // 2:]
@@ -56,7 +52,7 @@ class Interface:
 
                 line = line + 1 if pos == 0 else line - 1
 
-    def draw_board(self, board, table):
+    def draw_board(self, table):
         for index_column in range(self.column_count):
             for index_line in range(self.row_count):
                 pygame.draw.rect(self.screen,
@@ -65,14 +61,16 @@ class Interface:
                                   index_line * self.squaresize + self.squaresize,
                                   self.squaresize,
                                   self.squaresize))
-                pygame.draw.circle(self.screen,
-                                   BLACK,
-                                   (int(index_column * self.squaresize + self.squaresize / 2),
-                                    int(index_line * self.squaresize + self.squaresize + self.squaresize / 2)),
-                                   self.radius)
+                if index_line != 7:
+                    pygame.draw.circle(self.screen,
+                                       BLACK,
+                                       (int(index_column * self.squaresize + self.squaresize / 2),
+                                        int(index_line * self.squaresize + self.squaresize + self.squaresize / 2)),
+                                       self.radius)
         self.prepro(table)
         self.draw_pieces(self.up_table, 0)
-        self.draw_pieces(self.down_table, 18)
+        self.draw_pieces(self.down_table, 14)
+        pygame.display.update()
 
 
 class Backgammon:
@@ -193,9 +191,8 @@ def play_game():
     game = Backgammon()
     game_over = False
     interf = Interface(game.table)
-    board = interf.create_board()
     while not game.end_game() and not game_over:
-        interf.draw_board(board, game.table)
+        interf.draw_board(game.table)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over = True
