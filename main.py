@@ -48,7 +48,7 @@ class Interface:
             while table[col] != 0:
                 if table[col] < 0:
                     # if the piece has negative value, piece is BROWN, because player 0 has BROWN pieces
-                    pygame.draw.circle(self.screen, BROWN,
+                    pygame.draw.circle(self.screen, BLUE,
                                        (int(col * self.squaresize + self.squaresize / 2),
                                         int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                        self.radius)
@@ -71,7 +71,7 @@ class Interface:
         # a number that means how many pieces are removed
         # for player 0, number is negative and for player1 the opposite
 
-        color = BROWN if pos == 0 else WHITE
+        color = BLUE if pos == 0 else WHITE
         line = pos
         while out_pieces != 0:
             # if the position is 0 (which means up side), piece is BROWN
@@ -97,20 +97,20 @@ class Interface:
                                self.radius)
 
     def choose_player(self):
-        self.screen.fill(BLUE)
+        self.screen.fill(BLACK)
         pygame.display.update()
         font_title = pygame.font.SysFont("Roboto", 45)
-        text_title = font_title.render("Choose the player type: ", True, WHITE)
+        text_title = font_title.render("Choose the player type: ", True, BLUE)
         self.screen.blit(text_title, (self.width / 5,
                                       self.height / 3))
 
         font_title = pygame.font.SysFont("Roboto", 30)
-        text_title = font_title.render("Person", True, WHITE)
+        text_title = font_title.render("Person", True, BLUE)
         self.screen.blit(text_title, (self.width / 2 - self.squaresize + 10,
                                       self.height / 3 + self.squaresize * 2))
 
         font_title = pygame.font.SysFont("Roboto", 30)
-        text_title = font_title.render("Computer", True, WHITE)
+        text_title = font_title.render("Computer", True, BLUE)
         self.screen.blit(text_title, (self.width / 2 - self.squaresize,
                                       self.height / 3 + self.squaresize * 4))
         pygame.display.update()
@@ -135,7 +135,7 @@ class Interface:
         for index_column in range(self.column_count):
             for index_line in range(self.row_count):
                 pygame.draw.rect(self.screen,
-                                 GREEN,
+                                 BROWN,
                                  (index_column * self.squaresize,
                                   index_line * self.squaresize + self.squaresize,
                                   self.squaresize,
@@ -403,8 +403,8 @@ def play_game():
     interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
     while not game.end_game() and not game_over:
         # add player information on the screen
-        color = "BROWN" if game.player == 0 else "WHITE"
-        text = font.render("Player: {}".format(color), True, WHITE, BLACK)
+        color = " BLUE " if game.player == 0 else " WHITE "
+        text = font.render(" Player: {}".format(color), True, WHITE, BLACK)
         message(interf, game, text, 1)
 
         # roll the dice
