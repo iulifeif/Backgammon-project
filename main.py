@@ -1,6 +1,8 @@
 import copy
 import math
 import random
+from time import sleep
+
 import pygame
 import sys
 import numpy as np
@@ -16,7 +18,7 @@ BROWN = (150, 75, 0)
 
 class Interface:
     # initialize table with fixed dimensions
-    def __init__(self, table):
+    def __init__(self):
         self.squaresize = 50
         self.column_count = 12
         self.row_count = 16
@@ -25,8 +27,6 @@ class Interface:
         self.size = (self.width, self.height)
         self.radius = int(self.squaresize / 2 - 5)
         self.screen = pygame.display.set_mode(self.size)
-        # self.draw_board(table)
-        # pygame.display.update()
 
     # split the original table from logic (wich is a list) in 2 lists
     # one for up site of table and another one for down side
@@ -69,34 +69,28 @@ class Interface:
         # out_pieces is a number, not a list
         # a number that means how many pieces are removed
         # for player 0, number is negative and for player1 the opposite
-        for _ in range(abs(out_pieces)):
-            line = pos
-            while out_pieces != 0:
-                if pos == 0:
-                    # if the position is 0 (wich means up side), piece is BROWN
-                    # because player 0 has the pieces taken out of the board at the top
-                    pygame.draw.circle(self.screen, BROWN,
-                                       (int(12 * self.squaresize + self.squaresize / 2),
-                                        int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
-                                       self.radius)
-                    out_pieces += 1
-                else:
-                    # otherwise means down side, piece is WHITE
-                    # because player 1 has the pieces taken out of the board at the botton
-                    pygame.draw.circle(self.screen, WHITE,
-                                       (int(12 * self.squaresize + self.squaresize / 2),
-                                        int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
-                                       self.radius)
-                    out_pieces -= 1
-                # the line at which it is drawn moves up or down
-                # depending on the part of the board on which it is located
-                line = line + 1 if pos == 0 else line - 1
+
+        color = BROWN if pos == 0 else WHITE
+        line = pos
+        while out_pieces != 0:
+            # if the position is 0 (which means up side), piece is BROWN
+            # because player 0 has the pieces taken out of the board at the top
+            # otherwise means down side, piece is WHITE
+            # because player 1 has the pieces taken out of the board at the bottom
+            pygame.draw.circle(self.screen, color,
+                               (int(12 * self.squaresize + self.squaresize / 2),
+                                int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
+                               self.radius)
+            out_pieces -= 1
+            # the line at which it is drawn moves up or down
+            # depending on the part of the board on which it is located
+            line = line + 1 if pos == 0 else line - 1
 
     # draw on the whole right side of the board, black pieces to erase the old pieces
     def clean_outer_pieces(self):
         # like the board, there are 16 lines
         for line in range(16):
-            pygame.draw.circle(self.screen, RED,
+            pygame.draw.circle(self.screen, BLACK,
                                (int(12 * self.squaresize + self.squaresize / 2),
                                 int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                self.radius)
@@ -113,7 +107,7 @@ class Interface:
                                   self.squaresize,
                                   self.squaresize))
                 # less on line 7, to delimit the up side from the bottom
-                if index_line != 7:
+                if index_line != (self.squaresize / 2 - 1):
                     pygame.draw.circle(self.screen,
                                        BLACK,
                                        (int(index_column * self.squaresize + self.squaresize / 2),
@@ -342,18 +336,17 @@ def message(interf, game, text, number_message):
 def play_game():
     # create class instances so as to use them
     game = Backgammon()
-    interf = Interface(game.table)
+    interf = Interface()
     # initialize a variable to turn off the loop if needed
     game_over = False
     # create the font for the text
     font = pygame.font.Font(None, 28)
+    # draw the interface
     while not game.end_game() and not game_over:
-        # draw the interface
         interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
-
         # add player information on the screen
-        color = "BROWN" if game.player == 0 else "WHITE"
-        text = font.render("Acum joaca playerul: {}".format(color), True, WHITE, BLACK)
+        # color = "BROWN" if game.player == 0 else "WHITE"
+        text = font.render("Acum joaca playerul: {}".format(game.player), True, WHITE, BLACK)
         message(interf, game, text, 1)
 
         # print("Acum joaca playerul: {}".format(game.player))
@@ -412,8 +405,10 @@ def play_game():
 
             print("Tabla dupa ce a mutat piesa: ")
             game.print_table()
+            print("redraw 1 ")
             # redraw the board
             interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
+            print("rendered 22")
         # turn is over and switch the player
         game.switch_player()
         # quit from x
