@@ -123,9 +123,11 @@ class Interface:
                     print(event.pos)
                     if 275 <= col <= 360 and \
                             355 <= line <= 390:
+                        # which means person
                         return 1
                     elif 265 <= col <= 380 and \
                             455 <= line <= 490:
+                        # which means computer
                         return 2
 
 
@@ -332,6 +334,22 @@ class Backgammon:
         # return the new state, after all these modifications
         return new_state
 
+    # return position start and end for a piece who must be moved
+    def pc_piece_positions(self):
+        for position in range(len(self.table)):
+            if self.table[position] >= 1 and self.first_dice and \
+                    self.table[position + self.first_dice] >= -1:
+                return position, position + self.first_dice
+            elif self.table[position] >= 1 and self.second_dice and \
+                    self.table[position + self.second_dice] >= -1:
+                return position, position + self.second_dice
+
+    def pc_house_position(self):
+        if self.first_dice and self.table[self.first_dice - 1] >= 1:
+            return self.first_dice - 1
+        elif self.second_dice and self.table[self.second_dice - 1] >= 1:
+            return self.second_dice - 1
+
 
 # receives the coordinates where it is clicked and
 # returns the position in the table from logic part
@@ -372,90 +390,185 @@ def play_game():
     game = Backgammon()
     interf = Interface()
     player_type = interf.choose_player()
-    # initialize a variable to turn off the loop if needed
-    game_over = False
-    # create the font for the text
-    font = pygame.font.Font(None, 28)
-    # draw the interface
-    while not game.end_game() and not game_over:
-        interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
-        # add player information on the screen
-        color = "BROWN" if game.player == 0 else "WHITE"
-        text = font.render("Acum joaca playerul: {}".format(color), True, WHITE, BLACK)
-        message(interf, game, text, 1)
+    if player_type == 1:
+        # initialize a variable to turn off the loop if needed
+        game_over = False
+        # create the font for the text
+        font = pygame.font.Font(None, 28)
+        # draw the interface
+        while not game.end_game() and not game_over:
+            interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
+            # add player information on the screen
+            color = "BROWN" if game.player == 0 else "WHITE"
+            text = font.render("Acum joaca playerul: {}".format(color), True, WHITE, BLACK)
+            message(interf, game, text, 1)
 
-        # print("Acum joaca playerul: {}".format(game.player))
-        # roll the dice
-        game.roll_dices()
+            # print("Acum joaca playerul: {}".format(game.player))
+            # roll the dice
+            game.roll_dices()
 
-        # add information about the dice on the screen
-        text = font.render("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice), True, WHITE, BLACK)
-        message(interf, game, text, 2)
+            # add information about the dice on the screen
+            text = font.render("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice), True, WHITE, BLACK)
+            message(interf, game, text, 2)
 
-        # print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
-        print("Tabla de start: ")
-        game.print_table()
-        # if the player has pieces outside the table and can put them in the house
-        while game.need_to_put_in_house() and game.can_put_in_house():
-            # position_home = int(input("Unde vrei sa intrii cu piesa: "))
-            # click where i want to put the piece
-            position_home = click_for_position(interf)
-
-            # if the position he wants to move to is not a valid one, he cannot move to that place
-            # click until it receives a valid position
-            game_copy = copy.deepcopy(game)
-            game = game.add_in_house(position_home)
-            while game is None:
-                print("Ai introdus o pozitie gresita! Da click din nou!")
+            # print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
+            print("Tabla de start: ")
+            game.print_table()
+            # if the player has pieces outside the table and can put them in the house
+            while game.need_to_put_in_house() and game.can_put_in_house():
+                # position_home = int(input("Unde vrei sa intrii cu piesa: "))
+                # click where i want to put the piece
                 position_home = click_for_position(interf)
-                game = game_copy.add_in_house(position_home)
 
-            print("Tabla dupa ce a intrat cu piesa in casa: ")
-            game.print_table()
-            # redraw the table after the move
-            interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
-        while game.can_move():
-            # position_start = int(input("Pozitia de la care vrei sa muti piesa: "))
+                # if the position he wants to move to is not a valid one, he cannot move to that place
+                # click until it receives a valid position
+                game_copy = copy.deepcopy(game)
+                game = game.add_in_house(position_home)
+                while game is None:
+                    print("Ai introdus o pozitie gresita! Da click din nou!")
+                    position_home = click_for_position(interf)
+                    game = game_copy.add_in_house(position_home)
 
-            # click to select the piece which i want to be moved
-            position_start = click_for_position(interf)
+                print("Tabla dupa ce a intrat cu piesa in casa: ")
+                game.print_table()
+                # redraw the table after the move
+                interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
+            while game.can_move():
+                # position_start = int(input("Pozitia de la care vrei sa muti piesa: "))
 
-            # print("positia start este", position_start)
-
-            # click to select the position where to move the piece
-            position_end = click_for_position(interf)
-
-            # position_end = int(input("Pozitia unde muti?: "))
-            # print("positia end este", position_end)
-
-            # if the positions are not a valid, player cannot move
-            # click until it receives valid positions
-            game_copy = copy.deepcopy(game)
-            game = game.move(position_start, position_end)
-            while game is None:
-                print("Ai introdus o pozitie gresita! Da click din nou! ")
+                # click to select the piece which i want to be moved
                 position_start = click_for_position(interf)
-                position_end = click_for_position(interf)
-                game = game_copy.move(position_start, position_end)
 
-            print("Tabla dupa ce a mutat piesa: ")
-            game.print_table()
-            print("redraw 1 ")
-            # redraw the board
+                # print("positia start este", position_start)
+
+                # click to select the position where to move the piece
+                position_end = click_for_position(interf)
+
+                # position_end = int(input("Pozitia unde muti?: "))
+                # print("positia end este", position_end)
+
+                # if the positions are not a valid, player cannot move
+                # click until it receives valid positions
+                game_copy = copy.deepcopy(game)
+                game = game.move(position_start, position_end)
+                while game is None:
+                    print("Ai introdus o pozitie gresita! Da click din nou! ")
+                    position_start = click_for_position(interf)
+                    position_end = click_for_position(interf)
+                    game = game_copy.move(position_start, position_end)
+
+                print("Tabla dupa ce a mutat piesa: ")
+                game.print_table()
+                print("redraw 1 ")
+                # redraw the board
+                interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
+                print("rendered 22")
+            # turn is over and switch the player
+            game.switch_player()
+            # quit from x
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_over = True
+                    sys.exit()
+        # check who won
+        if game.end_pieces_1 == 10:
+            print("Jucatorul 1 a castigat!")
+        elif game.end_pieces_0 == 10:
+            print("Jucatorul 0 a castigat!")
+    elif player_type == 2:
+        # initialize a variable to turn off the loop if needed
+        game_over = False
+        # create the font for the text
+        font = pygame.font.Font(None, 28)
+        # draw the interface
+        while not game.end_game() and not game_over:
             interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
-            print("rendered 22")
-        # turn is over and switch the player
-        game.switch_player()
-        # quit from x
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-                sys.exit()
-    # check who won
-    if game.end_pieces_1 == 10:
-        print("Jucatorul 1 a castigat!")
-    elif game.end_pieces_0 == 10:
-        print("Jucatorul 0 a castigat!")
+            # add player information on the screen
+            color = "BROWN" if game.player == 0 else "WHITE"
+            text = font.render("Acum joaca playerul: {}".format(color), True, WHITE, BLACK)
+            message(interf, game, text, 1)
+
+            # print("Acum joaca playerul: {}".format(game.player))
+            # roll the dice
+            game.roll_dices()
+
+            # add information about the dice on the screen
+            text = font.render("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice), True, WHITE, BLACK)
+            message(interf, game, text, 2)
+            if game.player == 1:
+                sleep(5)
+            # print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
+            # print("Tabla de start: ")
+            # game.print_table()
+            # if the player has pieces outside the table and can put them in the house
+            while game.need_to_put_in_house() and game.can_put_in_house():
+                # position_home = int(input("Unde vrei sa intrii cu piesa: "))
+                # click where i want to put the piece
+                if game.player == 0:
+                    position_home = click_for_position(interf)
+                elif game.player == 1:
+                    position_home = game.pc_house_position()
+
+                # if the position he wants to move to is not a valid one, he cannot move to that place
+                # click until it receives a valid position
+                game_copy = copy.deepcopy(game)
+                game = game.add_in_house(position_home)
+                while game is None:
+                    print("Ai introdus o pozitie gresita! Da click din nou!")
+                    position_home = click_for_position(interf)
+                    game = game_copy.add_in_house(position_home)
+
+                # print("Tabla dupa ce a intrat cu piesa in casa: ")
+                # game.print_table()
+                # redraw the table after the move
+                interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
+                if game.player == 1:
+                    sleep(10)
+            while game.can_move():
+                # position_start = int(input("Pozitia de la care vrei sa muti piesa: "))
+
+                if game.player == 0:
+                # click to select the piece which i want to be moved
+                    position_start = click_for_position(interf)
+
+                    # print("positia start este", position_start)
+
+                    # click to select the position where to move the piece
+                    position_end = click_for_position(interf)
+                elif game.player == 1:
+                    position_start, position_end = game.pc_piece_positions()
+
+                # position_end = int(input("Pozitia unde muti?: "))
+                # print("positia end este", position_end)
+
+                # if the positions are not a valid, player cannot move
+                # click until it receives valid positions
+                game_copy = copy.deepcopy(game)
+                game = game.move(position_start, position_end)
+                while game is None:
+                    print("Ai introdus o pozitie gresita! Da click din nou! ")
+                    position_start = click_for_position(interf)
+                    position_end = click_for_position(interf)
+                    game = game_copy.move(position_start, position_end)
+
+                # print("Tabla dupa ce a mutat piesa: ")
+                # game.print_table()
+                # redraw the board
+                interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
+                if game.player == 1:
+                    sleep(10)
+            # turn is over and switch the player
+            game.switch_player()
+            # quit from x
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_over = True
+                    sys.exit()
+        # check who won
+        if game.end_pieces_1 == 10:
+            print("Jucatorul 1 a castigat!")
+        elif game.end_pieces_0 == 10:
+            print("Jucatorul 0 a castigat!")
 
 
 if __name__ == '__main__':
