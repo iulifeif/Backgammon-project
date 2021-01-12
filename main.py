@@ -24,8 +24,8 @@ class Interface:
         self.size = (self.width, self.height)
         self.radius = int(self.squaresize / 2 - 5)
         self.screen = pygame.display.set_mode(self.size)
-        self.draw_board(table)
-        pygame.display.update()
+        # self.draw_board(table)
+        # pygame.display.update()
 
     def prepro(self, table):
         self.up_table = table[len(table) // 2:]
@@ -53,7 +53,27 @@ class Interface:
 
                 line = line + 1 if pos == 0 else line - 1
 
-    def draw_board(self, table):
+    def draw_outer_pieces(self, out_pieces, pos):
+        for col in range(out_pieces):
+            line = pos
+            while out_pieces != 0:
+                if pos == 0:
+                    pygame.draw.circle(self.screen, BROWN,
+                                       (int(12 * self.squaresize + self.squaresize / 2),
+                                        int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
+                                       self.radius)
+                    out_pieces += 1
+                else:
+                    pygame.draw.circle(self.screen, WHITE,
+                                       (int(12 * self.squaresize + self.squaresize / 2),
+                                        int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
+                                       self.radius)
+                    out_pieces -= 1
+
+                line = line + 1 if pos == 0 else line - 1
+        pygame.display.update()
+
+    def draw_board(self, table, table_out_0, table_out_1):
         for index_column in range(self.column_count):
             for index_line in range(self.row_count):
                 pygame.draw.rect(self.screen,
@@ -71,12 +91,17 @@ class Interface:
         self.prepro(table)
         self.draw_pieces(self.up_table, 0)
         self.draw_pieces(self.down_table, 14)
+        self.draw_outer_pieces(table_out_0, 0)
+        self.draw_outer_pieces(table_out_1, 14)
         pygame.display.update()
 
 
 class Backgammon:
     # initializarea starii
-    def __init__(self, player=0, table=None, dice1=0, dice2=0, end_pieces_0=0, end_pieces_1=0, out_pieces_0=0, out_pieces_1=0):
+    def __init__(self, player=0, table=None,
+                 dice1=0, dice2=0,
+                 end_pieces_0=0, end_pieces_1=0,
+                 out_pieces_0=0, out_pieces_1=0):
         self.player = player
         if table is None:
             self.table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
@@ -209,12 +234,12 @@ def click_for_position():
         return 11 - col
 
 
-def message(interf, table, text, number_message):
+def message(interf, game, text, number_message):
     number = 3 if number_message == 1 else 7
     textRect = text.get_rect()
     textRect.center = (interf.squaresize * number, interf.squaresize / 2)
     interf.screen.blit(text, textRect)
-    interf.draw_board(table)
+    interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
 
 
 def play_game():
@@ -223,19 +248,19 @@ def play_game():
     interf = Interface(game.table)
     font = pygame.font.Font(None, 28)
     while not game.end_game() and not game_over:
-        interf.draw_board(game.table)
+        interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
 
         # adaug informatii despre jucator si zaruri
-        text = font.render("Acum joaca playerul: {}".format(game.player), True, WHITE)
-        message(interf, game.table, text, 1)
+        text = font.render("Acum joaca playerul: {}".format(game.player), True, WHITE, BLACK)
+        message(interf, game, text, 1)
 
         # print("Acum joaca playerul: {}".format(game.player))
         game.roll_dices()
 
-        text = font.render("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice), True, WHITE)
-        message(interf, game.table, text, 2)
+        text = font.render("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice), True, WHITE, BLACK)
+        message(interf, game, text, 2)
 
-        # print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
+        print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
         print("Tabla de start: ")
         game.print_table()
         while game.need_to_put_in_house():
@@ -247,7 +272,7 @@ def play_game():
 
             print("Tabla dupa ce a intrat cu piesa in casa: ")
             game.print_table()
-            interf.draw_board(game.table)
+            interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
         while game.can_move():
             # position_start = int(input("Pozitia de la care vrei sa muti piesa: "))
 
@@ -263,7 +288,7 @@ def play_game():
             game = game.move(position_start, position_end)
             print("Tabla dupa ce a mutat piesa: ")
             game.print_table()
-            interf.draw_board(game.table)
+            interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
         game.switch_player()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

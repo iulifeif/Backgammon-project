@@ -1,4 +1,6 @@
 # import pygame module in this program
+from time import sleep
+
 import pygame
 import sys
 import numpy as np
@@ -14,7 +16,7 @@ BROWN = (150, 75, 0)
 SQUARESIZE = 50
 COLUMN_COUNT = 12
 ROW_COUNT = 16
-width = SQUARESIZE * COLUMN_COUNT
+width = SQUARESIZE * (COLUMN_COUNT + 1)
 height = SQUARESIZE * ROW_COUNT
 size = (width, height)
 RADIUS = int(SQUARESIZE / 2 - 5)
@@ -80,19 +82,25 @@ if __name__ == '__main__':
     board = create_board()
     draw_board(board, table)
 
-
     selected_piece = 0
-    text = "player black"
     while not game_over:
+        # if nr % 2:
+        #     text = font.render("Acum joaca playerul 1", True, RED, WHITE)
+        # else:
+        #     text = font.render("Acum joaca playerul 0", True, RED, WHITE)
+        # textRect = text.get_rect()
+        # textRect.center = (SQUARESIZE * 2, SQUARESIZE / 2)
+        # screen.blit(text, textRect)
 
-        text = font.render(text, True, RED, WHITE)
-        textRect = text.get_rect()
-        textRect.center = (SQUARESIZE / 2 + SQUARESIZE, SQUARESIZE / 2)
-        screen.blit(text, textRect)
+        pygame.draw.circle(screen, RED,
+                           (int(12 * SQUARESIZE + SQUARESIZE / 2),
+                            int(3 * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
+                           RADIUS)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over = True
                 sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print(event.pos)
             pygame.display.update()
-        text = "player white"
