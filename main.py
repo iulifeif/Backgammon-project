@@ -138,6 +138,7 @@ class Backgammon:
             return None
 
         dice = 24 - position if new_state.player == 0 else position + 1
+        print("zarul este: {}".format(dice))
 
         if new_state.first_dice and new_state.first_dice == dice:
             new_state.first_dice = 0
@@ -208,16 +209,33 @@ def click_for_position():
         return 11 - col
 
 
+def message(interf, table, text, number_message):
+    number = 3 if number_message == 1 else 7
+    textRect = text.get_rect()
+    textRect.center = (interf.squaresize * number, interf.squaresize / 2)
+    interf.screen.blit(text, textRect)
+    interf.draw_board(table)
+
+
 def play_game():
     game = Backgammon()
     game_over = False
     interf = Interface(game.table)
+    font = pygame.font.Font(None, 28)
     while not game.end_game() and not game_over:
         interf.draw_board(game.table)
 
-        print("Acum joaca playerul: {}".format(game.player))
+        # adaug informatii despre jucator si zaruri
+        text = font.render("Acum joaca playerul: {}".format(game.player), True, WHITE)
+        message(interf, game.table, text, 1)
+
+        # print("Acum joaca playerul: {}".format(game.player))
         game.roll_dices()
-        print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
+
+        text = font.render("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice), True, WHITE)
+        message(interf, game.table, text, 2)
+
+        # print("Cu zarurile: {}, {}".format(game.first_dice, game.second_dice))
         print("Tabla de start: ")
         game.print_table()
         while game.need_to_put_in_house():

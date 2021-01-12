@@ -14,7 +14,7 @@ BROWN = (150, 75, 0)
 SQUARESIZE = 50
 COLUMN_COUNT = 12
 ROW_COUNT = 16
-width = SQUARESIZE * (COLUMN_COUNT + 1)
+width = SQUARESIZE * COLUMN_COUNT
 height = SQUARESIZE * ROW_COUNT
 size = (width, height)
 RADIUS = int(SQUARESIZE / 2 - 5)
@@ -59,51 +59,40 @@ def draw_board(board, table):
         for index_line in range(ROW_COUNT):
             pygame.draw.rect(screen, GREEN,
                              (index_column * SQUARESIZE, index_line * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
-            pygame.draw.circle(screen, BLACK,
-                               (int(index_column * SQUARESIZE + SQUARESIZE / 2),
-                                int(index_line * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
-                               RADIUS)
+            if index_line != 7:
+                pygame.draw.circle(screen, BLACK,
+                                   (int(index_column * SQUARESIZE + SQUARESIZE / 2),
+                                    int(index_line * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
+                                   RADIUS)
     up_table, down_table = prepro(table)
     draw_pieces(up_table, 0)
     draw_pieces(down_table, 14)
 
 
 if __name__ == '__main__':
+
+    font = pygame.font.Font(None, 28)
+
     # infinite loop
     table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
     game_over = False
     screen = pygame.display.set_mode(size)
     board = create_board()
     draw_board(board, table)
-    pygame.display.update()
+
+
     selected_piece = 0
+    text = "player black"
     while not game_over:
+
+        text = font.render(text, True, RED, WHITE)
+        textRect = text.get_rect()
+        textRect.center = (SQUARESIZE / 2 + SQUARESIZE, SQUARESIZE / 2)
+        screen.blit(text, textRect)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over = True
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                print(event.pos)
-            # if event.type == pygame.MOUSEBUTTONDOWN and not selected_piece:
-            #     x, y = event.pos
-            #     x = int(x % 50)
-            #     x = 0 if x <= 9 else:1
-            #     y = int(y % 50)
-            #     pygame.draw.circle(screen, RED,
-            #                        (int(y * SQUARESIZE + SQUARESIZE / 2),
-            #                         int(x * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
-            #                        RADIUS)
-            #     pygame.display.update()
-            #     pygame.display.flip()
-            #     selected_piece = 1
-            # if event.type == pygame.MOUSEBUTTONDOWN and selected_piece:
-            #     x, y = event.pos
-            #     x = int(x % 50)
-            #     y = int(y % 50)
-            #     pygame.draw.circle(screen, WHITE,
-            #                        (int(y * SQUARESIZE + SQUARESIZE / 2),
-            #                         int(x * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
-            #                        RADIUS)
-            #     pygame.display.update()
-            #     pygame.display.flip()
-            #     selected_piece = 0
+            pygame.display.update()
+        text = "player white"
