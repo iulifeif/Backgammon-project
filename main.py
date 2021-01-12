@@ -14,6 +14,7 @@ BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BROWN = (150, 75, 0)
+BLUE = (106, 159, 181)
 
 
 class Interface:
@@ -27,6 +28,7 @@ class Interface:
         self.size = (self.width, self.height)
         self.radius = int(self.squaresize / 2 - 5)
         self.screen = pygame.display.set_mode(self.size)
+        pygame.display.set_caption("Backgammon")
 
     # split the original table from logic (wich is a list) in 2 lists
     # one for up site of table and another one for down side
@@ -95,6 +97,38 @@ class Interface:
                                 int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                self.radius)
 
+    def choose_player(self):
+        self.screen.fill(BLUE)
+        pygame.display.update()
+        fontTitle = pygame.font.SysFont("Roboto", 45)
+        textTitle = fontTitle.render("Choose the player type: ", True, WHITE)
+        self.screen.blit(textTitle, (self.width / 5,
+                                     self.height / 3))
+
+        fontTitle = pygame.font.SysFont("Roboto", 30)
+        textTitle = fontTitle.render("Person", True, WHITE)
+        self.screen.blit(textTitle, (self.width / 2 - self.squaresize + 10,
+                                     self.height / 3 + self.squaresize * 2))
+
+        fontTitle = pygame.font.SysFont("Roboto", 30)
+        textTitle = fontTitle.render("Computer", True, WHITE)
+        self.screen.blit(textTitle, (self.width / 2 - self.squaresize,
+                                     self.height / 3 + self.squaresize * 4))
+        pygame.display.update()
+        player_type = -1
+        while player_type == -1:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    col, line = event.pos
+                    print(event.pos)
+                    if 275 <= col <= 360 and \
+                            355 <= line <= 390:
+                        return 1
+                    elif 265 <= col <= 380 and \
+                            455 <= line <= 490:
+                        return 2
+
+
     # the board is drawn as a matrix with green elements
     # then add in each square, a black circle
     def draw_board(self, table, table_out_0, table_out_1):
@@ -107,7 +141,7 @@ class Interface:
                                   self.squaresize,
                                   self.squaresize))
                 # less on line 7, to delimit the up side from the bottom
-                if index_line != (self.squaresize / 2 - 1):
+                if index_line != 7:
                     pygame.draw.circle(self.screen,
                                        BLACK,
                                        (int(index_column * self.squaresize + self.squaresize / 2),
@@ -337,6 +371,7 @@ def play_game():
     # create class instances so as to use them
     game = Backgammon()
     interf = Interface()
+    player_type = interf.choose_player()
     # initialize a variable to turn off the loop if needed
     game_over = False
     # create the font for the text
@@ -345,8 +380,8 @@ def play_game():
     while not game.end_game() and not game_over:
         interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
         # add player information on the screen
-        # color = "BROWN" if game.player == 0 else "WHITE"
-        text = font.render("Acum joaca playerul: {}".format(game.player), True, WHITE, BLACK)
+        color = "BROWN" if game.player == 0 else "WHITE"
+        text = font.render("Acum joaca playerul: {}".format(color), True, WHITE, BLACK)
         message(interf, game, text, 1)
 
         # print("Acum joaca playerul: {}".format(game.player))
