@@ -527,8 +527,16 @@ def play_game():
     # check who won
     if game.end_pieces_1 == 10:
         print("Player 1 WON!")
+        font_title = pygame.font.SysFont("Roboto", 60)
+        text_title = font_title.render("Player 1 WON!", True, BLUE)
+        interf.screen.blit(text_title, (interf.squaresize * 4, interf.squaresize * 8))
+        sleep(5)
     elif game.end_pieces_0 == 10:
         print("Player 0 WON!")
+        font_title = pygame.font.SysFont("Roboto", 60)
+        text_title = font_title.render("Player 0 WON!", True, BLUE)
+        interf.screen.blit(text_title, (interf.squaresize * 4, interf.squaresize * 8))
+        sleep(5)
 
 
 if __name__ == '__main__':
