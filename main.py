@@ -12,6 +12,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BROWN = (150, 75, 0)
 BLUE = (106, 159, 181)
+SELECTED = (50, 117, 206)
 
 
 class Interface:
@@ -60,9 +61,10 @@ class Interface:
                                         int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                        self.radius)
                     table[col] -= 1
-                # the line at which it is drawn moves up or down
-                # depending on the part of the board on which it is located
-                line = line + 1 if pos == 0 else line - 1
+                if (line + 1 != 7 and pos == 0) or (line - 1 != 7 and pos != 0):
+                    # the line at which it is drawn moves up or down
+                    # depending on the part of the board on which it is located
+                    line = line + 1 if pos == 0 else line - 1
 
     # draw the pieces that are taken out of the board
     # player 0 at the top, and player 1 at the bottom
@@ -96,9 +98,18 @@ class Interface:
                                 int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                self.radius)
 
+    # screen for choose the type of player want to play with (Person or Computer)
     def choose_player(self):
+        # draw the table
         self.screen.fill(BLACK)
-        pygame.display.update()
+        # draw the quit button
+        pygame.draw.rect(self.screen,
+                         WHITE,
+                         (600, 10, 30, 30),
+                         border_radius=10)
+        font = pygame.font.SysFont("Roboto", 20)
+        self.screen.blit(font.render("Quit", True, BLACK), (600, 15))
+        # draw the text
         font_title = pygame.font.SysFont("Roboto", 45)
         text_title = font_title.render("Choose the player type: ", True, BLUE)
         self.screen.blit(text_title, (self.width / 5,
@@ -109,21 +120,32 @@ class Interface:
         self.screen.blit(text_title, (self.width / 2 - self.squaresize + 10,
                                       self.height / 3 + self.squaresize * 2))
 
-        font_title = pygame.font.SysFont("Roboto", 30)
         text_title = font_title.render("Computer", True, BLUE)
         self.screen.blit(text_title, (self.width / 2 - self.squaresize,
                                       self.height / 3 + self.squaresize * 4))
+        # update the screen
         pygame.display.update()
+        # wait to choose a player
         player_type = -1
         while player_type == -1:
             for event in pygame.event.get():
+                # quit from x
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     col, line = event.pos
-                    print(event.pos)
-                    if 275 <= col <= 360 and \
+                    # quit from quit
+                    if 600 <= col <= 630 and \
+                            10 <= line <= 40:
+                        pygame.quit()
+                        sys.exit()
+                    # coords for Human
+                    elif 275 <= col <= 360 and \
                             355 <= line <= 390:
                         # which means person
                         return 1
+                    # coords for Computer
                     elif 265 <= col <= 380 and \
                             455 <= line <= 490:
                         # which means computer
@@ -147,6 +169,18 @@ class Interface:
                                        (int(index_column * self.squaresize + self.squaresize / 2),
                                         int(index_line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                        self.radius)
+        # line from the middle of the table
+        pygame.draw.line(self.screen,
+                         BLACK,
+                         (self.squaresize * 6, 0),
+                         (self.squaresize * 6, self.squaresize * self.row_count),
+                         5)
+        pygame.draw.rect(self.screen,
+                         WHITE,
+                         (600, 10, 30, 30),
+                         border_radius=10)
+        font = pygame.font.SysFont("Roboto", 20)
+        self.screen.blit(font.render("Quit", True, BLACK), (600, 15))
         # model the table to be more easily to take the positions of the pieces
         self.prepro(table)
         # draw pieces for up side and down side
@@ -365,16 +399,28 @@ def click_for_position(interf):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # save the position in col and line
                 col, line = event.pos
+                # if press Quit
+                if 600 <= col <= 630 and 10 <= line <= 40:
+                    pygame.quit()
+                    sys.exit()
                 # divides according to the size of the squares
                 line = int(line / interf.squaresize)
                 col = int(col / interf.squaresize)
+            # quit from x
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+    pygame.draw.circle(interf.screen,
+                       SELECTED,
+                       (int(col * interf.squaresize + interf.squaresize / 2),
+                        int((line - 1) * interf.squaresize + interf.squaresize + interf.squaresize / 2)),
+                       interf.radius)
+    pygame.display.update()
     # if the line is smaller than 7, it means we are talking about the top of the board
     # otherwise the bottom
-    if line < 7:
-        print("s-a ales pozitia")
+    if line <= 7:
         return col + 12
     elif line > 7:
-        print("s-a ales pozitia")
         return 11 - col
 
 
@@ -395,13 +441,12 @@ def play_game():
     interf = Interface()
     player_type = interf.choose_player()
     # initialize a variable to turn off the loop if needed
-    game_over = False
     # create the font for the text
     font = pygame.font.Font(None, 28)
     # draw the interface
 
     interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
-    while not game.end_game() and not game_over:
+    while not game.end_game():
         # add player information on the screen
         color = " BLUE " if game.player == 0 else " WHITE "
         text = font.render(" Player: {}".format(color), True, WHITE, BLACK)
@@ -437,6 +482,7 @@ def play_game():
             game = game.add_in_house(position_home)
             while game is None:
                 print("Wrong position! Click again!")
+                interf.draw_board(game_copy.table, game_copy.out_pieces_0, game_copy.out_pieces_1)
                 position_home = click_for_position(interf)
                 game = game_copy.add_in_house(position_home)
 
@@ -465,6 +511,7 @@ def play_game():
             game = game.move(position_start, position_end)
             while game is None:
                 print("Wrong position! Click again! ")
+                interf.draw_board(game_copy.table, game_copy.out_pieces_0, game_copy.out_pieces_1)
                 position_start = click_for_position(interf)
                 position_end = click_for_position(interf)
                 game = game_copy.move(position_start, position_end)
@@ -476,11 +523,7 @@ def play_game():
                 sleep(5)
         # turn is over and switch the player
         game.switch_player()
-        # quit from x
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-                sys.exit()
+
     # check who won
     if game.end_pieces_1 == 10:
         print("Player 1 WON!")
