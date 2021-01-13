@@ -16,23 +16,36 @@ SELECTED = (50, 117, 206)
 
 
 class Interface:
-    # initialize table with fixed dimensions
     def __init__(self):
+        """ initialize table with fixed dimensions """
+        # dimension of square
         self.squaresize = 50
+        # the number of column
         self.column_count = 12
+        # the number of rows
         self.row_count = 16
+        # the width of the screed
         self.width = self.squaresize * (self.column_count + 1)
+        # the height of the screen
         self.height = self.squaresize * self.row_count
+        # the size of the screen
         self.size = (self.width, self.height)
+        #  the radios of the circle
         self.radius = int(self.squaresize / 2 - 5)
+        # display the screen
         self.screen = pygame.display.set_mode(self.size)
         self.up_table = []
         self.down_table = []
         pygame.display.set_caption("Backgammon")
 
-    # split the original table from logic (which is a list) in 2 lists
-    # one for up site of table and another one for down side
     def prepro(self, table):
+        """ split the original table from logic (which is a list) in 2 lists
+            one for up site of table and another one for down side
+            Args:
+                table (int, list): the list which contain pieses, the logical table
+            Updated variables:
+                up_table: the second half of the logical table
+                down_table: the first half of logical table and reversed"""
         # from the middle to the end is up side
         self.up_table = table[len(table) // 2:]
         intermediary_down_table = table[:len(table) // 2]
@@ -41,9 +54,12 @@ class Interface:
         for pos in reversed(range(len(intermediary_down_table))):
             self.down_table.append(intermediary_down_table[pos])
 
-    # draw the pieces according to the board received
-    # and the velue of pieces, because player 0 has negative pieces and player 1 positive pieces
     def draw_pieces(self, table, pos):
+        """ draw the pieces according to the board received
+            and the velue of pieces, because player 0 has negative pieces and player 1 positive pieces
+            Args:
+                table (int, list): table which contain pieces, half of the logic table
+                pos (int): the position of the line from which to start drawing the parts"""
         for col in range(len(table)):
             line = pos
             while table[col] != 0:
@@ -66,13 +82,14 @@ class Interface:
                     # depending on the part of the board on which it is located
                     line = line + 1 if pos == 0 else line - 1
 
-    # draw the pieces that are taken out of the board
-    # player 0 at the top, and player 1 at the bottom
+    #
+    #
     def draw_outer_pieces(self, out_pieces, pos):
-        # out_pieces is a number, not a list
-        # a number that means how many pieces are removed
-        # for player 0, number is negative and for player1 the opposite
-
+        """ draw the pieces that are taken out of the board
+            player 0 at the top, and player 1 at the bottom
+            Args:
+                out_pieces (int): a number that represents how many pieces removed has the player
+                pos (int): the position of the line from which to start drawing the parts"""
         color = BLUE if pos == 0 else WHITE
         line = pos
         while out_pieces != 0:
@@ -89,8 +106,8 @@ class Interface:
             # depending on the part of the board on which it is located
             line = line + 1 if pos == 0 else line - 1
 
-    # draw on the whole right side of the board, black pieces to erase the old pieces
     def clean_outer_pieces(self):
+        """draw on the whole right side of the board, black pieces to erase the old pieces"""
         # like the board, there are 16 lines
         for line in range(16):
             pygame.draw.circle(self.screen, BLACK,
@@ -98,8 +115,8 @@ class Interface:
                                 int(line * self.squaresize + self.squaresize + self.squaresize / 2)),
                                self.radius)
 
-    # screen for choose the type of player want to play with (Person or Computer)
     def choose_player(self):
+        """ draw the screen for choose the type of player want to play with (Person or Computer)"""
         # draw the table
         self.screen.fill(BLACK)
         # draw the quit button
@@ -151,9 +168,14 @@ class Interface:
                         # which means computer
                         return 2
 
-    # the board is drawn as a matrix with green elements
-    # then add in each square, a black circle
     def draw_board(self, table, table_out_0, table_out_1):
+        """ the board is drawn as a matrix with green elements
+            then add in each square, a black circle, this function also calls the necessary functions for
+            preprocessing the table, for draw the pieces from table and pieces outer table
+            Args:
+                table(int, list): the list which contain pieces,the logical table
+                table_out_0 (int): the number that represents how many pieces removed has player 0
+                table_out_1 (int): the number that represents how many pieces removed has player 1"""
         for index_column in range(self.column_count):
             for index_line in range(self.row_count):
                 pygame.draw.rect(self.screen,
@@ -196,13 +218,21 @@ class Interface:
 
 
 class Backgammon:
-    # initializes the state
     def __init__(self, player=0, table=None,
                  dice1=0, dice2=0,
                  end_pieces_0=0, end_pieces_1=0,
                  out_pieces_0=0, out_pieces_1=0):
+        """initializes the state
+            Args:
+                player (int): 0 for player 0 and 1 for player 1
+                table (int, list): the list which contain pieces,the logical table
+                end_pieces_0 (int): the number that means how many pieces has player 0 outer table
+                end_pieces_1 (int): the number that means how many pieces has player 1 outer table
+                out_pieces_0 (int): the number that means how many pieces has player 0 outer table, definitive
+                out_pieces_1 (int): the number that means how many pieces has player 1 outer table, definitive"""
         self.player = player
         if table is None:
+            # table from the logic part
             self.table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
         else:
             self.table = copy.deepcopy(table)
@@ -212,38 +242,48 @@ class Backgammon:
         self.end_pieces_1 = end_pieces_1
         self.out_pieces_0 = out_pieces_0
         self.out_pieces_1 = out_pieces_1
+        # the lambda function to verificat 2 position, 0 is for player 0 and 1 for player 1
         self.player_sign = {0: lambda a, b: a <= b,
                             1: lambda a, b: a >= b}
 
-    # printing at the screen the game board (including position indexes)
     def print_table(self):
+        """ printing at the screen the game board (including position indexes)"""
         print([indices for indices in range(len(self.table))])
         print(self.table)
 
-    # dice initialization
     def roll_dice(self):
-        # a dice can have a value 1 and 6
+        """ dice initialization
+            a dice can have a value between 1 and 6"""
         self.first_dice = random.randint(1, 6)
         self.second_dice = random.randint(1, 6)
 
-    # check if one of the players has finished the game
-    # (if he has removed all the pieces from the table)
     def end_game(self):
+        """ check if one of the players has finished the game
+            (if he has removed all the pieces from the table)
+            Return:
+                True: if one of the players has all 10 pieces outer table, for good
+                False:if one of the players not have all 10 pieces outer table"""
         return self.end_pieces_1 == 10 or self.end_pieces_0 == 10
 
-    # the player is updated from 0 to 1 and vice versa
     def switch_player(self):
+        """ the player is updated from 0 to 1 and vice versa"""
         self.player = (self.player + 1) % 2
 
-    # check if the player has pieces to put in the house
     def need_to_put_in_house(self):
+        """ check if the player has pieces to put in the house
+        Return:
+            True: if the player has pieces to put in the house
+            False : if the player not have pieces to put in the house"""
         # check which player has to move and he has outer pieces
         return (self.player == 0 and self.out_pieces_0) or \
                (self.player == 1 and self.out_pieces_1)
 
     def can_put_in_house(self):
-        # if exist a valid dice and can put the piece in the house with that dice, returns True
-        # if is nowhere to put the piece in the house, the dice are canceled and moves to the next player
+        """ check if the player has valid dice and if he has an empty square to enter with his dice
+            if is nowhere to put the piece in the house, the dice are canceled and moves to the next player
+            Return:
+                True: if exist a valid dice and can put the piece in the house with that dice
+                False: if not exist a valid dice and can put the piece in the house with that dice"""
         first_dice = 0
         second_dice = 0
         if self.first_dice:
@@ -260,9 +300,14 @@ class Backgammon:
             self.second_dice = 0
             return False
 
-    # add in the house to the received position
     def add_in_house(self, position):
-        # create a copy for state
+        """ add the piece in house to the received position
+        Args:
+            position(int): represent the position on the logical table where to add the piece
+        Return:
+            new_state(obj): the new state who contain all variables for game
+            None: in case of error"""
+        # create a copy for actual state
         new_state = Backgammon(self.player, self.table, self.first_dice, self.second_dice, self.end_pieces_0,
                                self.end_pieces_1, self.out_pieces_0, self.out_pieces_1)
         # check the player to save the sign on the piece (positive or negative)
@@ -302,8 +347,8 @@ class Backgammon:
         # return the new state, after all these modifications
         return new_state
 
-    # check if player is able to move a piece
     def can_move(self):
+        """ check if player is able to move any piece who belong to him"""
         # if the player still has valid dice to move with
         if not self.first_dice and not self.second_dice:
             return 0
@@ -318,8 +363,14 @@ class Backgammon:
                 return True
         return False
 
-    # move a piece on the table, from a specific position to another specific position
     def move(self, start_position, end_position):
+        """ move a piece on the table, from a specific position to another specific position
+            Args:
+                start_position (int): the position from which want to move the piece on the logic table
+                end_position(int): the position to which want to move the piece on the logic board
+            Return:
+                new_state(obj): the new state who contain all variables for game
+                None: in case of error"""
         # create a copy for state
         new_state = Backgammon(self.player, self.table, self.first_dice, self.second_dice,
                                self.end_pieces_0, self.end_pieces_1, self.out_pieces_0, self.out_pieces_1)
@@ -370,6 +421,10 @@ class Backgammon:
 
     # return position start and end for a piece who must be moved
     def pc_piece_positions(self):
+        """ Search for a piece who can be moved with at least one dice, if the dice is valid
+            Return:
+                the position from which you want to move the piece and
+                the position to which you want to move the piece"""
         for position in range(len(self.table)):
             if self.table[position] >= 1 and self.first_dice and \
                     self.table[position + self.first_dice] >= -1:
@@ -380,6 +435,10 @@ class Backgammon:
         return None
 
     def pc_house_position(self):
+        """check if with the given dice, can enter in the house with at least one of the dice
+            Return:
+                position in the house, where it can enter with at least one of the given dice
+                None: in case of error"""
         if self.first_dice and self.table[self.first_dice - 1] >= -1:
             return self.first_dice - 1
         elif self.second_dice and self.table[self.second_dice - 1] >= -1:
@@ -388,9 +447,12 @@ class Backgammon:
             return None
 
 
-# receives the coordinates where it is clicked and
-# returns the position in the table from logic part
 def click_for_position(interf):
+    """this function waits to receive a click to take the coordinates and turn them into position on the logic table
+        Args:
+            interf(obj): object for interface to call class variables
+        Return:
+            the position in the table from logic part corresponding to the coordinates where was clicked"""
     col = -1
     line = -1
     # wait until receive the first click
@@ -424,8 +486,13 @@ def click_for_position(interf):
         return 11 - col
 
 
-# print the received message on the screen (at the top of the board)
 def message(interf, game, text, number_message):
+    """ print the received message on the screen (at the top of the board)
+    Args:
+        interf(obj): object of the Interface class
+        game(obj):object of the Backgammon class
+        text (str): the text who must be displayed
+        number_message(int): the number of message to know how to indent the text"""
     # this number is for indent the text
     number = 3 if number_message == 1 else 8
     text_rect = text.get_rect()
@@ -434,8 +501,11 @@ def message(interf, game, text, number_message):
     interf.draw_board(game.table, game.out_pieces_0, game.out_pieces_1)
 
 
-# the part where it unfolds the logic and the interface of the game
 def play_game():
+    """ the part where it unfolds the logic and the interface of the game
+        This is the primary function where the game is played,
+        pieces are added to the house, moves are made, and at the end it is displayed who won,
+        and all these are displayed in the interface"""
     # create class instances so as to use them
     game = Backgammon()
     interf = Interface()
@@ -526,7 +596,9 @@ def play_game():
 
     # check who won
     if game.end_pieces_1 == 10:
+        # print at the console
         print("Player 1 WON!")
+        # print at the screen
         font_title = pygame.font.SysFont("Roboto", 60)
         text_title = font_title.render("Player 1 WON!", True, BLUE)
         interf.screen.blit(text_title, (interf.squaresize * 4, interf.squaresize * 8))
@@ -540,4 +612,5 @@ def play_game():
 
 
 if __name__ == '__main__':
+    """ just play the game"""
     play_game()
