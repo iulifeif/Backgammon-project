@@ -1,27 +1,93 @@
+import random
+
 import pygame
 import sys
 
+from numpy.ma import copy
+
+from backgammon import Backgammon
 from utils import load_sprite
 from colors import *
 
 
 class Interface:
-    def __init__(self, table=None, dice1=0, dice2=0,
-                 end_pieces0=0, end_pieces1=0,
-                 out_pieces0=0, out_pieces1=0):
+    def __init__(self, player=0, table=None, dice1=0, dice2=0,
+                 end_pieces_0=0, end_pieces_1=0,
+                 out_pieces_0=0, out_pieces_1=0, game_mode=2):
         """ initialize table with fixed dimensions """
+        self.player = player
         self.table = table
-        self.screen = pygame.display.set_mode((800, 800))
-        self.background = load_sprite("main_table", False)
+        self.screen = 0
         self.up_table = []
         self.down_table = []
         self.first_dice = dice1
-        self.seconf_dice = dice2
-        self.end_pieces0 = end_pieces0
-        self.end_pieces1 = end_pieces1
-        self.out_pieces0 = out_pieces0
-        self.out_pieces1 = out_pieces1
+        self.second_dice = dice2
+        self.end_pieces_0 = end_pieces_0
+        self.end_pieces_1 = end_pieces_1
+        self.out_pieces_0 = out_pieces_0
+        self.out_pieces_1 = out_pieces_1
+        self.game_mode = game_mode
+        self.clicked_piece = -1
+        self.clicked_side = -1
+        self.third_dice = 0
+        self.fourth_dice = 0
+        self.first_dice_used = 0
+        self.second_dice_used = 0
+        self.third_dice_used = 0
+        self.fourth_dice_used = 0
 
+    def update_clicked_piece(self, piece_start, up_or_down):
+        self.clicked_piece = piece_start
+        self.clicked_side = up_or_down
+
+    def update_player(self, player):
+        self.player = player
+
+    def update_table(self, table):
+        print(table)
+        self.table = table
+
+    def update_dice(self, dice1, dice2, dice3, dice4):
+        if dice1 == 0:
+            self.first_dice_used = 1
+        else:
+            self.first_dice = dice1
+            self.first_dice_used = 0
+        if dice2 == 0:
+            self.second_dice_used = 1
+        else:
+            self.second_dice = dice2
+            self.second_dice_used = 0
+        if dice3 == 0:
+            self.third_dice_used = 1
+        else:
+            self.third_dice = dice3
+            self.third_dice_used = 0
+        if dice4 == 0:
+            self.fourth_dice_used = 1
+        else:
+            self.fourth_dice = dice4
+            self.fourth_dice_used = 0
+
+    def update_end_pieces(self, end_pieces_0, end_pieces_1):
+        self.end_pieces_0 = end_pieces_0
+        self.end_pieces_1 = end_pieces_1
+
+    def update_out_pieces(self, out_pieces_0, out_pieces_1):
+        self.out_pieces_0 = out_pieces_0
+        self.out_pieces_1 = out_pieces_1
+        print("PIESELE OUT ", self.out_pieces_0, self.out_pieces_1)
+
+    def update_game_mode(self, game_mode):
+        self.game_mode = game_mode
+
+    def draw_table(self):
+        self.screen = pygame.display.set_mode((800, 800))
+        self.screen.fill(WHITE)
+        if self.game_mode == 1:
+            self.screen.blit(load_sprite("two_players_back", False), (0, 0))
+        else:
+            self.screen.blit(load_sprite("main_back", False), (0, 0))
 
     def preprocess_table(self):
         """ split the original table from logic (which is a list) in 2 lists
@@ -61,26 +127,122 @@ class Interface:
                 self.screen.blit(sprite, blit_position)
                 draw_pieces = draw_pieces + 1
 
-    def draw_outer_pieces(self):
+    def draw_end_pieces(self):
         """ draw the pieces that are taken out of the board
             player 0 at the top, and player 1 at the bottom
             Args:
                 out_pieces (int): a number that represents how many pieces removed has the player
                 pos (int): the position of the line from which to start drawing the parts"""
-        number_draw_pieces = 0
-        sprite = load_sprite("white_got", True)
-        while number_draw_pieces < self.out_pieces0:
-            blit_position = pygame.Vector2((380, 300 + number_draw_pieces * 50))
+        piece_index = 0
+        while piece_index < self.end_pieces_0:
+            sprite = load_sprite("white_beard_off", True)
+            blit_position = pygame.Vector2((750, 366 + piece_index * 11))
             self.screen.blit(sprite, blit_position)
-            number_draw_pieces = number_draw_pieces + 1
-        number_draw_pieces = 0
-        sprite = load_sprite("black_got", True)
-        while number_draw_pieces < self.out_pieces1:
-            blit_position = pygame.Vector2((380, 570 - number_draw_pieces * 50))
+            piece_index += 1
+        piece_index = 0
+        while piece_index < self.end_pieces_1:
+            sprite = load_sprite("black_beard_off", True)
+            blit_position = pygame.Vector2((750, 755 + piece_index * 11))
             self.screen.blit(sprite, blit_position)
-            number_draw_pieces = number_draw_pieces + 1
+            piece_index += 1
 
-    def draw_board(self):
+    def draw_out_pieces(self):
+        piece_index = 0
+        while piece_index < self.out_pieces_0:
+            sprite = load_sprite("white_got", True)
+            blit_position = pygame.Vector2((380, 300 + piece_index * 50))
+            self.screen.blit(sprite, blit_position)
+            piece_index += 1
+        piece_index = 0
+        while piece_index < self.out_pieces_1:
+            sprite = load_sprite("black_got", True)
+            blit_position = pygame.Vector2((380, 570 - piece_index * 50))
+            self.screen.blit(sprite, blit_position)
+            piece_index += 1
+
+    def draw_turn_ligh(self):
+        sprite = load_sprite("turn_light", True)
+        if self.player == 0:
+            blit_position = pygame.Vector2((287, 1))
+        else:
+            blit_position = pygame.Vector2((430, 1))
+        self.screen.blit(sprite, blit_position)
+
+    def draw_dice_roll(self):
+        blit_position = pygame.Vector2((743, 382))
+        if self.first_dice_used == self.second_dice_used == self.third_dice_used == self.fourth_dice_used:
+            if self.player == 0:
+                sprite = load_sprite("active_dice_button", True)
+                self.screen.blit(sprite, blit_position)
+            else:
+                sprite = load_sprite("active_player2_dice", True)
+                self.screen.blit(sprite, blit_position)
+
+    def draw_dice(self):
+        color = "white_dice_" if self.player == 0 else "black_dice_"
+        sprite = load_sprite(color + str(self.first_dice), True)
+        blit_position = pygame.Vector2((450, 390))
+        self.screen.blit(sprite, blit_position)
+        sprite = load_sprite(color + str(self.second_dice), True)
+        blit_position = pygame.Vector2((500, 390))
+        self.screen.blit(sprite, blit_position)
+
+        if self.first_dice == self.second_dice:
+            blit_position = pygame.Vector2((450, 450))
+            self.screen.blit(sprite, blit_position)
+            blit_position = pygame.Vector2((500, 450))
+            self.screen.blit(sprite, blit_position)
+
+    def draw_piece_highlite(self):
+        piece_color = "white_highlight" if self.player == 0 else "black_highlight"
+        sprite = load_sprite(piece_color, True)
+        number_pieces = self.table[self.clicked_piece] - 1
+        if number_pieces == -1:
+            print("Ai dat click pe langa!")
+            return None
+        if self.clicked_side == "down":
+            column_position = 11 - self.clicked_piece
+            if column_position > 6:
+                column_position += 1
+            blit_position = pygame.Vector2((80 + column_position * 50,
+                                            730 - number_pieces * 45))
+        elif self.clicked_side == "up":
+            column_position = self.clicked_piece - 12
+            if column_position > 6:
+                column_position += 1
+            blit_position = pygame.Vector2((80 + column_position * 50,
+                                            135 + number_pieces * 45))
+        else:
+            return None
+        self.screen.blit(sprite, blit_position)
+
+    def draw_where_player_can_move(self):
+        game = Backgammon(self.game_mode, self.player, self.table,
+                          self.first_dice, self.second_dice,
+                          self.end_pieces_0, self.end_pieces_1,
+                          self.out_pieces_0, self.out_pieces_1)
+        dice_value = [self.first_dice, self.second_dice, self.third_dice, self.fourth_dice]
+        dice_used = [self.first_dice_used, self.second_dice_used, self.third_dice_used, self.fourth_dice_used]
+        for index_dice in range(len(dice_value)):
+            move_with_one_dice = self.clicked_piece - dice_value[index_dice] if self.player == 0 \
+                else self.clicked_piece + dice_value[index_dice]
+            if dice_used[index_dice] == 0 and game.move_can_be_made(self.clicked_piece, move_with_one_dice):
+                if move_with_one_dice > 11:
+                    if move_with_one_dice > 17:
+                        move_with_one_dice += 1
+                    move_with_one_dice -= 12
+                    sprite = load_sprite("destination_light", True)
+                    blit_position = pygame.Vector2((73 + move_with_one_dice * 50, 115))
+                else:
+                    move_with_one_dice = 11 - move_with_one_dice
+                    print("pozitia de DESENAT ", move_with_one_dice)
+                    if move_with_one_dice > 6:
+                        move_with_one_dice += 1
+                    sprite = load_sprite("destination_light_bottom", True)
+                    blit_position = pygame.Vector2((73 + move_with_one_dice * 50, 500))
+                self.screen.blit(sprite, blit_position)
+
+    def draw(self):
         """ the board is drawn as a matrix with green elements
             then add in each square, a black circle, this function also calls the necessary functions for
             preprocessing the table, for draw the pieces from table and pieces outer table
@@ -89,16 +251,20 @@ class Interface:
                 table_out_0 (int): the number that represents how many pieces removed has player 0
                 table_out_1 (int): the number that represents how many pieces removed has player 1"""
         # set screen size
-        self.screen = pygame.display.set_mode((800, 800))
-        self.screen.fill(WHITE)
-        self.screen.blit(load_sprite("main_table", False), (0, 0))
-        # pygame.display.set_caption("Backgammon")
-        # set the background
-        # self.background = load_sprite("main_table", False)
+        self.draw_table()
         self.preprocess_table()
+        self.draw_turn_ligh()
+        self.draw_dice_roll()
+        if self.first_dice != 0 and (self.first_dice_used == 0 or self.second_dice_used == 0 or
+                                     self.third_dice_used == 0 or self.fourth_dice_used == 0):
+            self.draw_dice()
         self.draw_pieces("upper")
         self.draw_pieces("lower")
-        self.draw_outer_pieces()
+        if self.clicked_piece != -1:
+            self.draw_piece_highlite()
+            self.draw_where_player_can_move()
+        self.draw_out_pieces()
+        self.draw_end_pieces()
         pygame.display.update()
 
 

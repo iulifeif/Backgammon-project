@@ -1,4 +1,5 @@
 # import pygame module in this program
+import random
 
 import pygame
 import sys
@@ -59,7 +60,7 @@ def prepro(table):
 
 
 def draw_board(board, table):
-    screen.blit(load_sprite("main_table", False), (0, 0))
+    screen.blit(load_sprite("main_back", False), (0, 0))
     # for index_column in range(COLUMN_COUNT):
     #     for index_line in range(ROW_COUNT):
     #         pygame.draw.rect(screen, GREEN,
@@ -80,30 +81,31 @@ if __name__ == '__main__':
 
     # infinite loop
     table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
-    game_over = False
     screen = pygame.display.set_mode(size)
+    game_over = False
     board = create_board()
     draw_board(board, table)
     # partea de sus
     sprite = load_sprite("black_got", True)
-    blit_position = pygame.Vector2((680, 135))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((630, 135))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((680, 180))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((680-12*50, 135))
-    screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((680, 135))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((630, 135))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((680, 180))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((680-12*50, 135))
+    # screen.blit(sprite, blit_position)
     # partea de jos
     sprite = load_sprite("white_got", True)
-    blit_position = pygame.Vector2((680, 730))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((680, 685))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((630, 730))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((680-12*50, 730))
-    screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((680, 730))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((680, 685))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((630, 730))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((680-12*50, 730))
+    # screen.blit(sprite, blit_position)
+    # piesele de pe mijloc
     blit_position = pygame.Vector2((380, 300))
     screen.blit(sprite, blit_position)
     blit_position = pygame.Vector2((380, 350))
@@ -113,39 +115,68 @@ if __name__ == '__main__':
     blit_position = pygame.Vector2((380, 520))
     screen.blit(sprite, blit_position)
     # player turn
-    sprite = load_sprite("turn_light", True)
-    blit_position = pygame.Vector2((287, 1))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((430, 1))
-    screen.blit(sprite, blit_position)
+    # sprite = load_sprite("turn_light", True)
+    # blit_position = pygame.Vector2((287, 1))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((430, 1))
+    # screen.blit(sprite, blit_position)
     # unde muta playerul sus
-    sprite = load_sprite("destination_light", True)
-    blit_position = pygame.Vector2((222, 115))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((272, 115))
-    screen.blit(sprite, blit_position)
+    # sprite = load_sprite("destination_light", True)
+    # blit_position = pygame.Vector2((72, 115))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((222, 115))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((272, 115))
+    # screen.blit(sprite, blit_position)
     # unde muta playerul jos
-    sprite = load_sprite("destination_light_bottom", True)
-    blit_position = pygame.Vector2((222, 500))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((272, 500))
-    screen.blit(sprite, blit_position)
+    # sprite = load_sprite("destination_light_bottom", True)
+    # blit_position = pygame.Vector2((222, 500))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((272, 500))
+    # screen.blit(sprite, blit_position)
+    # dice roll
+    # sprite = load_sprite("dice_button", True)
+    # blit_position = pygame.Vector2((743, 382))
+    # screen.blit(sprite, blit_position)
+    # dice
+    # dice1 = str(random.randint(1, 6))
+    # dice2 = str(random.randint(1, 6))
+    # sprite = load_sprite("white_dice_"+dice1, True)
+    # blit_position = pygame.Vector2((450, 390))
+    # screen.blit(sprite, blit_position)
+    # sprite = load_sprite("white_dice_" + dice1, True)
+    # blit_position = pygame.Vector2((500, 390))
+    # screen.blit(sprite, blit_position)
+    # sprite = load_sprite("white_dice_" + dice1, True)
+    # blit_position = pygame.Vector2((450, 450))
+    # screen.blit(sprite, blit_position)
+    # sprite = load_sprite("white_dice_" + dice1, True)
+    # blit_position = pygame.Vector2((500, 450))
+    # screen.blit(sprite, blit_position)
+    # piesele scoase afara
+    # negre
+    # sprite = load_sprite("black_beard_off", True)
+    # blit_position = pygame.Vector2((750, 344))
+    # screen.blit(sprite, blit_position)
+    # sprite = load_sprite("black_beard_off", True)
+    # blit_position = pygame.Vector2((750, 355))
+    # screen.blit(sprite, blit_position)
+    # sprite = load_sprite("black_beard_off", True)
+    # blit_position = pygame.Vector2((750, 366))
+    # screen.blit(sprite, blit_position)
+    # albe
+    # sprite = load_sprite("white_beard_off", True)
+    # blit_position = pygame.Vector2((750, 733))
+    # screen.blit(sprite, blit_position)
+    # sprite = load_sprite("white_beard_off", True)
+    # blit_position = pygame.Vector2((750, 744))
+    # screen.blit(sprite, blit_position)
+    # sprite = load_sprite("white_beard_off", True)
+    # blit_position = pygame.Vector2((750, 755))
+    # screen.blit(sprite, blit_position)
 
     selected_piece = 0
     while not game_over:
-        # if nr % 2:
-        #     text = font.render("Acum joaca playerul 1", True, RED, WHITE)
-        # else:
-        #     text = font.render("Acum joaca playerul 0", True, RED, WHITE)
-        # textRect = text.get_rect()
-        # textRect.center = (SQUARESIZE * 2, SQUARESIZE / 2)
-        # screen.blit(text, textRect)
-
-        # pygame.draw.circle(screen, RED,
-        #                    (int(12 * SQUARESIZE + SQUARESIZE / 2),
-        #                     int(3 * SQUARESIZE + SQUARESIZE + SQUARESIZE / 2)),
-        #                    RADIUS)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over = True
