@@ -3,14 +3,16 @@ from time import sleep
 import pygame
 import sys
 
-from backgammon import Backgammon, click_for_position
-from interface import Interface, choose_game_mode
-from colors import *
+from Backgammon import Backgammon, click_for_position
+from Evaluation import Evaluation
+from Interface import Interface, choose_game_mode
 
 pygame.init()
 
+turns = 1
 
-def play_game():
+
+def play_game(number_of_turns):
     """ the part where it unfolds the logic and the interface of the game
         This is the primary function where the game is played,
         pieces are added to the house, moves are made, and at the end it is displayed who won,
@@ -79,6 +81,7 @@ def play_game():
                 print("GAME IS NONE")
         # turn is over and switch the player
         game.switch_player()
+        number_of_turns += 1
         interf.update_player(game.player)
         interf.update_dice(game.first_dice, game.second_dice, game.third_dice, game.fourth_dice)
         interf.draw()
@@ -93,12 +96,14 @@ def play_game():
         text_title = font_title.render("Player 1 WON!", True, BLACK)
         interf.screen.blit(text_title, (50 * 4, 50 * 8))
         sleep(5)
+        return number_of_turns, 1
     elif game.end_pieces_0 == 10:
         print("Player 0 WON!")
         font_title = pygame.font.SysFont("Roboto", 60)
         text_title = font_title.render("Player 0 WON!", True, BLACK)
         interf.screen.blit(text_title, (50 * 4, 50 * 8))
         sleep(5)
+        return number_of_turns, 0
 
 
 if __name__ == '__main__':
@@ -107,4 +112,6 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 break
-        play_game()
+        number_of_turns, player = play_game()
+        ev = Evaluation(number_of_turns, player)
+        ev.evaluate()
