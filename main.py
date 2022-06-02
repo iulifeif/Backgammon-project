@@ -6,12 +6,19 @@ import sys
 from Backgammon import Backgammon, click_for_position
 from Evaluation import Evaluation
 from Interface import Interface, choose_game_mode
+<<<<<<< Updated upstream
+=======
+from colors import *
+>>>>>>> Stashed changes
 
 pygame.init()
 
 turns = 1
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 def play_game(number_of_turns):
     """ the part where it unfolds the logic and the interface of the game
         This is the primary function where the game is played,
@@ -29,9 +36,9 @@ def play_game(number_of_turns):
     interf.draw()
     while True:
         # roll the dice
-        if game_mode == 2 and game.player == 1:
+        if (game_mode == 2 and game.player == 1) or game_mode == 3:
             game.roll_dice()
-            sleep(2)
+            sleep(1)
         elif game_mode == 1 or game.player == 0:
             col, line = click_for_position()
             if 740 <= col and line <= 520:
@@ -41,16 +48,26 @@ def play_game(number_of_turns):
         interf.draw()
         # if the player has pieces outside the table and can put them in the house
         while game.need_to_put_in_house() and game.can_put_in_house():
-            print("poate baga si PC ul in casa")
-            position_home = 0
-            if game.game_mode == 1 or game.player == 0:
+            print("intra pana aici")
+            position_home = -1
+            if (game.game_mode == 1 or game.player == 0) and game.game_mode != 3:
                 position_out = click_for_position()
                 position_home = click_for_position()
-            elif game.game_mode == 2 and game.player == 1:
-                position_home = game.pc_house_position()
+                print("here1")
+            elif (game.game_mode == 2 and game.player == 1) or game.game_mode == 3:
+                print("here2")
+                if game.player == 0:
+                    print("here3")
+                    position_home = game.pc_house_position_for0()
+                    print("here4", position_home)
+                else:
+                    print("here5")
+                    position_home = game.pc_house_position_for1()
+                    print("here6", position_home)
 
             game_copy = game.add_in_house(position_home)
             # update map
+            print("intra pana aici2")
             if game_copy is not None:
                 game = game_copy
                 interf.update_table(game.table)
@@ -60,13 +77,15 @@ def play_game(number_of_turns):
                 interf.draw()
             else:
                 print("NU POT BAGA IN CASA IS NONE")
-            if game.game_mode == 2 and game.player == 1:
-                sleep(3)
+            if (game.game_mode == 2 and game.player == 1) or game.game_mode == 3:
+                sleep(1.5)
         while game.can_move() and (game.first_dice != 0 or game.second_dice != 0 or
                                    game.third_dice != 0 or game.fourth_dice != 0):
+            print("zarurile: ", game.first_dice, game.second_dice, game.third_dice, game.fourth_dice)
             position_start, position_end = game.return_positions_for_movement(interf)
-            if game.game_mode == 2 and game.player == 1:
-                sleep(3)
+            print("pozitia de start si end sunt: ", position_start, position_end)
+            if (game.game_mode == 2 and game.player == 1) or game.game_mode == 3:
+                sleep(1.5)
             game_copy = game.move(position_start, position_end)
             if game_copy is not None:
                 # update map
@@ -79,6 +98,7 @@ def play_game(number_of_turns):
                 interf.draw()
             else:
                 print("GAME IS NONE")
+
         # turn is over and switch the player
         game.switch_player()
         number_of_turns += 1
@@ -112,6 +132,10 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 break
+<<<<<<< Updated upstream
         number_of_turns, player = play_game()
+=======
+        number_of_turns, player = play_game(1)
+>>>>>>> Stashed changes
         ev = Evaluation(number_of_turns, player)
         ev.evaluate()

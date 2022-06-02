@@ -5,7 +5,7 @@ import sys
 
 from numpy.ma import copy
 
-from backgammon import Backgammon
+from Backgammon import Backgammon
 from utils import load_sprite
 from colors import *
 
@@ -84,7 +84,7 @@ class Interface:
     def draw_table(self):
         self.screen = pygame.display.set_mode((800, 800))
         self.screen.fill(WHITE)
-        if self.game_mode == 1:
+        if self.game_mode == 1 or self.game_mode == 3:
             self.screen.blit(load_sprite("two_players_back", False), (0, 0))
         else:
             self.screen.blit(load_sprite("main_back", False), (0, 0))
@@ -118,7 +118,7 @@ class Interface:
             nr_pieces = abs(table[index])
             draw_pieces = 0
             piece_color = "white_got" if table[index] >= 1 else "black_got"
-            while draw_pieces < nr_pieces:
+            while draw_pieces < nr_pieces and draw_pieces < 7:
                 sprite = load_sprite(piece_color, True)
                 if table == self.up_table:
                     blit_position = pygame.Vector2((80 + index * 50, 135 + draw_pieces * 45))
@@ -134,15 +134,15 @@ class Interface:
                 out_pieces (int): a number that represents how many pieces removed has the player
                 pos (int): the position of the line from which to start drawing the parts"""
         piece_index = 0
-        while piece_index < self.end_pieces_0:
-            sprite = load_sprite("white_beard_off", True)
-            blit_position = pygame.Vector2((750, 366 + piece_index * 11))
+        while piece_index < self.end_pieces_1:
+            sprite = load_sprite("black_beard_off", True)
+            blit_position = pygame.Vector2((750, 366 - piece_index * 11))
             self.screen.blit(sprite, blit_position)
             piece_index += 1
         piece_index = 0
-        while piece_index < self.end_pieces_1:
-            sprite = load_sprite("black_beard_off", True)
-            blit_position = pygame.Vector2((750, 755 + piece_index * 11))
+        while piece_index < self.end_pieces_0:
+            sprite = load_sprite("white_beard_off", True)
+            blit_position = pygame.Vector2((750, 755 - piece_index * 11))
             self.screen.blit(sprite, blit_position)
             piece_index += 1
 
@@ -181,28 +181,30 @@ class Interface:
     def draw_dice(self):
         color = "white_dice_" if self.player == 0 else "black_dice_"
         sprite = load_sprite(color + str(self.first_dice), True)
-        blit_position = pygame.Vector2((450, 390))
+        blit_position = pygame.Vector2((480, 400))
         self.screen.blit(sprite, blit_position)
         sprite = load_sprite(color + str(self.second_dice), True)
-        blit_position = pygame.Vector2((500, 390))
+        blit_position = pygame.Vector2((530, 400))
         self.screen.blit(sprite, blit_position)
 
         if self.first_dice == self.second_dice:
-            blit_position = pygame.Vector2((450, 450))
+            blit_position = pygame.Vector2((480, 460))
             self.screen.blit(sprite, blit_position)
-            blit_position = pygame.Vector2((500, 450))
+            blit_position = pygame.Vector2((530, 460))
             self.screen.blit(sprite, blit_position)
 
     def draw_piece_highlite(self):
         piece_color = "white_highlight" if self.player == 0 else "black_highlight"
         sprite = load_sprite(piece_color, True)
         number_pieces = self.table[self.clicked_piece] - 1
+        if number_pieces > 8:
+            number_pieces = 8
         if number_pieces == -1:
             print("Ai dat click pe langa!")
             return None
         if self.clicked_side == "down":
             column_position = 11 - self.clicked_piece
-            if column_position > 6:
+            if column_position >= 6:
                 column_position += 1
             blit_position = pygame.Vector2((80 + column_position * 50,
                                             730 - number_pieces * 45))
@@ -236,7 +238,7 @@ class Interface:
                 else:
                     move_with_one_dice = 11 - move_with_one_dice
                     print("pozitia de DESENAT ", move_with_one_dice)
-                    if move_with_one_dice > 6:
+                    if move_with_one_dice >= 6:
                         move_with_one_dice += 1
                     sprite = load_sprite("destination_light_bottom", True)
                     blit_position = pygame.Vector2((73 + move_with_one_dice * 50, 500))
@@ -274,7 +276,7 @@ def choose_game_mode():
     screen = pygame.display.set_mode((800, 800))
     screen.fill(BLACK)
     font_title = pygame.font.SysFont("Roboto", 45)
-    text_title = font_title.render("Choose the mode: ", True, RED)
+    text_title = font_title.render("Choose game mode: ", True, WHITE)
     screen.blit(text_title, (800 / 5, 800 / 3))
     while True:
         for event in pygame.event.get():
@@ -285,28 +287,37 @@ def choose_game_mode():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 col, line = event.pos
                 # coords for Human
-                if 330 <= col <= 560 and 355 <= line <= 405:
+                if 320 <= col <= 560 and 355 <= line <= 405:
                     # which means person
                     return 1
                 # coords for Computer
                 elif 320 <= col <= 580 and 455 <= line <= 505:
                     # which means computer
                     return 2
+                elif 320 <= col <= 580 and 555 <= line <= 605:
+                    # which means computer
+                    return 3
         col, line = pygame.mouse.get_pos()
-        if 330 <= col <= 560 and 355 <= line <= 405:
-            pygame.draw.rect(screen, LIGHT, [330, 355, 230, 50], border_radius=40)
+        if 320 <= col <= 560 and 355 <= line <= 405:
+            pygame.draw.rect(screen, DARK_SHADE, [320, 350, 230, 50], border_radius=40)
         # coords for Computer
         elif 320 <= col <= 580 and 455 <= line <= 505:
-            pygame.draw.rect(screen, LIGHT, [320, 455, 260, 50], border_radius=40)
-        else:
-            pygame.draw.rect(screen, DARK_SHADE, [330, 355, 230, 50], border_radius=40)
             pygame.draw.rect(screen, DARK_SHADE, [320, 455, 260, 50], border_radius=40)
+        elif 320 <= col <= 580 and 555 <= line <= 605:
+            pygame.draw.rect(screen, DARK_SHADE, [320, 555, 290, 50], border_radius=40)
+        else:
+            pygame.draw.rect(screen, BLACK, [320, 350, 230, 50], border_radius=40)
+            pygame.draw.rect(screen, BLACK, [320, 455, 260, 50], border_radius=40)
+            pygame.draw.rect(screen, BLACK, [320, 555, 290, 50], border_radius=40)
         font_title = pygame.font.SysFont("Roboto", 30)
-        text = font_title.render("Human VS Human", True, RED)
-        screen.blit(text, (800 / 2 - 50 + 10,
+        text = font_title.render("Human VS Human", True, WHITE)
+        screen.blit(text, (800 / 2 - 50,
                            800 / 3 + 50 * 2))
-        text = font_title.render("Computer VS Human", True, RED)
+        text = font_title.render("Computer VS Human", True, WHITE)
         screen.blit(text, (800 / 2 - 50,
                            800 / 3 + 50 * 4))
+        text = font_title.render("Computer VS Computer", True, WHITE)
+        screen.blit(text, (800 / 2 - 50,
+                           800 / 3 + 50 * 6))
 
         pygame.display.update()

@@ -3,10 +3,14 @@ import random
 import sys
 
 import numpy
+import numpy as np
 import pygame
 
 
 class Backgammon:
+    _NUM_POINTS = 24
+    _STATE_SIZE = 198
+    _NUM_CHECKERS = 15
 
     def __init__(self, game_mode, player=0, table=None,
                  dice1=0, dice2=0, dice3=0, dice4=0,
@@ -51,7 +55,7 @@ class Backgammon:
         self.second_dice = random.randint(1, 6)
         if self.first_dice == self.second_dice:
             self.third_dice = self.first_dice
-            self.fourth_dice = self.fourth_dice
+            self.fourth_dice = self.first_dice
 
     def end_game(self):
         """ check if one of the players has finished the game
@@ -124,8 +128,9 @@ class Backgammon:
             None: in case of error"""
         # create a copy for actual state
         print("1")
-        if self.game_mode == 1 or self.player == 0:
+        if (self.game_mode == 1 or self.player == 0) and self.game_mode != 3:
             position, line = refine_position_to_move(position)
+        print("positia la care intra in casa: ", position)
         new_state = Backgammon(self.game_mode, self.player, self.table,
                                self.first_dice, self.second_dice, self.third_dice, self.fourth_dice,
                                self.end_pieces_0, self.end_pieces_1,
@@ -193,12 +198,16 @@ class Backgammon:
         # which means that a piece can be moved to another free position
         for position in range(len(self.table)):
             if self.player == 0 and self.table[position] > 0 and \
-                    (self.table[position - self.first_dice] >= -1 or self.table[position - self.second_dice] >= -1 or
-                     self.table[position - self.third_dice] >= -1 or self.table[position - self.fourth_dice] >= -1):
+                    (position - self.first_dice < 0 or self.table[position - self.first_dice] >= -1 or
+                     position - self.second_dice < 0 or self.table[position - self.second_dice] >= -1 or
+                     position - self.third_dice < 0 or self.table[position - self.third_dice] >= -1 or
+                     position - self.fourth_dice or self.table[position - self.fourth_dice] >= -1):
                 return True
             elif self.player == 1 and self.table[position] < 0 and \
-                    (self.table[position + self.first_dice] <= 1 or self.table[position + self.second_dice] <= 1 or
-                     self.table[position - self.third_dice] <= 1 or self.table[position - self.fourth_dice] <= 1):
+                    (position + self.first_dice > 23 or self.table[position + self.first_dice] <= 1 or
+                     position + self.second_dice > 23 or self.table[position + self.second_dice] <= 1 or
+                     position + self.third_dice > 23 or self.table[position + self.third_dice] <= 1 or
+                     position + self.fourth_dice > 23 or self.table[position + self.fourth_dice] <= 1):
                 return True
         return False
 
@@ -210,9 +219,9 @@ class Backgammon:
         return False
 
     def can_move_to_certain_place(self, pos):
-        if self.player == 0 and self.table[pos] >= -1:
+        if self.player == 0 and (self.table[pos] >= -1 or pos < 0):
             return True
-        if self.player == 1 and self.table[pos] <= 1:
+        if self.player == 1 and (self.table[pos] <= 1 or pos > 23):
             return True
         return False
 
@@ -220,6 +229,8 @@ class Backgammon:
         if self.player == 0:
             if start_pos < end_pos:
                 return False
+            if start_pos < 6 and end_pos < 0:
+                return True
             if self.table[end_pos] >= -1 and (start_pos - self.first_dice == end_pos or
                                               start_pos - self.second_dice == end_pos or
                                               start_pos - self.third_dice == end_pos or
@@ -229,6 +240,8 @@ class Backgammon:
         if self.player == 1:
             if start_pos > end_pos:
                 return False
+            if start_pos > 17 and end_pos > 23:
+                return True
             if self.table[end_pos] <= 1 and (start_pos + self.first_dice == end_pos or
                                              start_pos + self.second_dice == end_pos or
                                              start_pos + self.third_dice == end_pos or
@@ -239,8 +252,11 @@ class Backgammon:
     def return_positions_for_movement(self, interf):
         position_start = position_end = -1
         while position_start == -1:
-            if self.game_mode == 2 and self.player == 1:
-                position_start, position_end = self.pc_piece_positions()
+            if (self.game_mode == 2 and self.player == 1) or self.game_mode == 3:
+                if self.player == 0:
+                    position_start, position_end = self.pc_piece_positions_for0()
+                else:
+                    position_start, position_end = self.pc_piece_positions_for1()
             else:
                 # click to select the piece which i want to be moved
                 position_start = click_for_position()
@@ -253,7 +269,7 @@ class Backgammon:
                 interf.update_clicked_piece(-1, "up")
                 interf.draw()
                 # verifications
-                if position_start - position_end > 6:
+                if position_start - position_end > 6 and position_end > 0:
                     print("Difference is too big! Click again!")
                     position_start = position_end = 0
                 elif not self.can_move_certain_piece(position_start):
@@ -286,7 +302,7 @@ class Backgammon:
         # remove the piece from the start position
         new_state.table[start_position] -= piece_sign
         # if the position is off the table
-        if end_position > 23:
+        if end_position > 23 or end_position < 0:
             # save the piece as being taken out of the game definitively
             # here the player is also checked, to see where the piece should be saved
             if new_state.player == 0:
@@ -310,7 +326,26 @@ class Backgammon:
             return None
 
         # calculate the dice used
-        dice = abs(end_position - start_position)
+        if end_position > 23 or end_position < 0:
+            dices = [self.first_dice, self.second_dice, self.third_dice, self.fourth_dice]
+            dices.sort()
+            if self.player == 1:
+                for dice in dices:
+                    if 24 - start_position == dice:
+                        break
+                for dice in dices:
+                    if 24 - start_position < dice:
+                        break
+            else:
+                for dice in dices:
+                    if start_position + 1 == dice:
+                        break
+                for dice in dices:
+                    if start_position + 1 < dice:
+                        break
+
+        else:
+            dice = abs(end_position - start_position)
 
         # cancel the dice who was used
         if new_state.first_dice == dice and new_state.first_dice:
@@ -331,31 +366,165 @@ class Backgammon:
         # return the new state, after all these modifications
         return new_state
 
+    def calculate_points(self):
+        points_white = 0
+        points_black = 0
+        # add points for pieces placed in the middle of the table (out pieces)
+        pieces_in_the_middle = 0
+        while pieces_in_the_middle < self.out_pieces_0:
+            points_white += 25
+            pieces_in_the_middle += 1
+        pieces_in_the_middle = 0
+        while pieces_in_the_middle < self.out_pieces_1:
+            points_black += 25
+            pieces_in_the_middle += 1
+        for index_table in range(len(self.table)):
+            if self.table[index_table] > 0:
+                points_white += self.table[index_table] * (index_table + 1)
+            if self.table[index_table] < 0:
+                points_black += abs(self.table[index_table]) * (index_table + 1)
+        return points_white, points_black
+
     def pc_piece_positions(self):
         """ Search for a piece who can be moved with at least one dice, if the dice is valid
             Return:
                 the position from which you want to move the piece and
                 the position to which you want to move the piece"""
+        list_of_possible_moves = []
         for position in range(len(self.table)):
             if self.table[position] <= -1 and self.first_dice and \
                     self.table[position + self.first_dice] <= 1:
-                return position, position + self.first_dice
+                list_of_possible_moves.append((position, position + self.first_dice))
+                # return position, position + self.first_dice
             elif self.table[position] <= -1 and self.second_dice and \
                     self.table[position + self.second_dice] <= 1:
-                return position, position + self.second_dice
+                list_of_possible_moves.append((position, position + self.second_dice))
+                # return position, position + self.second_dice
             elif self.table[position] <= -1 and self.third_dice and \
                     self.table[position + self.third_dice] <= 1:
-                return position, position + self.third_dice
+                list_of_possible_moves.append((position, position + self.third_dice))
+                # return position, position + self.third_dice
             elif self.table[position] <= -1 and self.fourth_dice and \
                     self.table[position + self.fourth_dice] <= 1:
-                return position, position + self.fourth_dice
-        return None
+                list_of_possible_moves.append((position, position + self.fourth_dice))
+                # return position, position + self.fourth_dice
+        return list_of_possible_moves
 
-    def pc_house_position(self):
+    def pc_piece_positions_for0(self):
+        """ Search for a piece who can be moved with at least one dice, if the dice is valid
+            Return:
+                the position from which you want to move the piece and
+                the position to which you want to move the piece"""
+        flag = 0
+        for index in reversed(range(6, 24)):
+            if self.table[index] > 0:
+                flag += 1
+        if not flag:
+            if self.first_dice and self.table[self.first_dice - 1] >= 1:
+                return self.first_dice - 1, -1
+            elif self.second_dice and self.table[self.second_dice - 1] >= 1:
+                return self.second_dice - 1, -1
+            elif self.third_dice and self.table[self.third_dice - 1] >= 1:
+                return self.third_dice - 1, -1
+            elif self.fourth_dice and self.table[self.fourth_dice - 1] >= 1:
+                return self.fourth_dice - 1, -1
+            else:
+                for index in reversed(range(6)):
+                    if self.table[index] >= 1:
+                        return index, -1
+        for position in reversed(range(len(self.table))):
+            if self.table[position] >= 1 and self.first_dice and \
+                    (self.table[position - self.first_dice] >= -1 or position - self.first_dice < 0):
+                return position, position - self.first_dice
+            elif self.table[position] >= 1 and self.second_dice and \
+                    (self.table[position - self.second_dice] >= -1 or position - self.second_dice < 0):
+                return position, position - self.second_dice
+            elif self.table[position] >= 1 and self.third_dice and \
+                    (self.table[position - self.third_dice] >= -1 or position - self.third_dice < 0):
+                return position, position - self.third_dice
+            elif self.table[position] >= 1 and self.fourth_dice and \
+                    (self.table[position - self.fourth_dice] >= -1 or position - self.fourth_dice < 0):
+                return position, position - self.fourth_dice
+
+    def pc_piece_positions_for1(self):
+        """ Search for a piece who can be moved with at least one dice, if the dice is valid
+            Return:
+                the position from which you want to move the piece and
+                the position to which you want to move the piece"""
+        flag = 0
+        for index in range(18):
+            if self.table[index] < 0:
+                flag += 1
+        if not flag:
+            if self.first_dice and self.table[24 - self.first_dice] <= -1:
+                return 24 - self.first_dice, -1
+            elif self.second_dice and self.table[24 - self.second_dice] <= -1:
+                return 24 - self.second_dice, -1
+            elif self.third_dice and self.table[24 - self.third_dice] <= -1:
+                return 24 - self.third_dice, -1
+            elif self.fourth_dice and self.table[24 - self.fourth_dice] <= -1:
+                return 24 - self.fourth_dice, -1
+            else:
+                for index in range(18, 24):
+                    if self.table[index] <= -1:
+                        return index, -1
+
+        for position in range(len(self.table)):
+            if self.table[position] <= -1 and self.first_dice and \
+                    (self.table[position + self.first_dice] <= 1 or position + self.first_dice > 23):
+                return position, position + self.first_dice
+            elif self.table[position] <= -1 and self.second_dice and \
+                    (self.table[position + self.second_dice] <= 1 or position + self.second_dice > 23):
+                return position, position + self.second_dice
+            elif self.table[position] <= -1 and self.third_dice and \
+                    (self.table[position + self.third_dice] <= 1 or position + self.third_dice > 23):
+                return position, position + self.third_dice
+            elif self.table[position] <= -1 and self.fourth_dice and \
+                    (self.table[position + self.fourth_dice] <= 1 or position + self.fourth_dice > 23):
+                return position, position + self.fourth_dice
+
+    # def pc_house_position(self):
+    #     """check if with the given dice, can enter in the house with at least one of the dice
+    #         Return:
+    #             position in the house, where it can enter with at least one of the given dice
+    #             None: in case of error"""
+    #     list_positions_in_house = []
+    #     if self.first_dice and self.table[self.first_dice - 1] <= 1:
+    #         # return self.first_dice - 1
+    #         list_positions_in_house.append(self.first_dice - 1)
+    #     elif self.second_dice and self.table[self.second_dice - 1] <= 1:
+    #         # return self.second_dice - 1
+    #         list_positions_in_house.append(self.second_dice - 1)
+    #     elif self.third_dice and self.table[self.third_dice - 1] <= 1:
+    #         # return self.third_dice - 1
+    #         list_positions_in_house.append(self.third_dice - 1)
+    #     elif self.fourth_dice and self.table[self.fourth_dice - 1] <= 1:
+    #         # return self.fourth_dice - 1
+    #         list_positions_in_house.append(self.fourth_dice - 1)
+    #     return list_positions_in_house
+    def pc_house_position_for0(self):
         """check if with the given dice, can enter in the house with at least one of the dice
             Return:
                 position in the house, where it can enter with at least one of the given dice
                 None: in case of error"""
+        if self.first_dice and self.table[24 - self.first_dice] >= -1:
+            return 24 - self.first_dice
+        elif self.second_dice and self.table[24 - self.second_dice] >= -1:
+            return 24 - self.second_dice
+        elif self.third_dice and self.table[24 - self.third_dice] >= -1:
+            return 24 - self.third_dice
+        elif self.fourth_dice and self.table[24 - self.fourth_dice] >= -1:
+            return 24 - self.fourth_dice
+        else:
+            return None
+
+    def pc_house_position_for1(self):
+        """check if with the given dice, can enter in the house with at least one of the dice
+            Return:
+                position in the house, where it can enter with at least one of the given dice
+                None: in case of error"""
+        print("zarurile pentru bagat is casa sunt: ", self.first_dice, self.second_dice,
+              self.third_dice, self.fourth_dice)
         if self.first_dice and self.table[self.first_dice - 1] <= 1:
             return self.first_dice - 1
         elif self.second_dice and self.table[self.second_dice - 1] <= 1:
@@ -366,6 +535,42 @@ class Backgammon:
             return self.fourth_dice - 1
         else:
             return None
+
+    def encode_state(self, turn):
+        _o_points, _x_points = self.calculate_points()
+        state = np.zeros(self._STATE_SIZE)
+
+        for point in range(self._NUM_POINTS):
+            index = point * 4
+            if self.table[point] <= -1:
+                state[index:index + 4] = encode_point(abs(self.table[point]))
+
+        for point in range(self._NUM_POINTS):
+            index = (point + 24) * 4
+            if self.table[point] >= 1:
+                state[index:index + 4] = encode_point(self.table[point])
+
+        state[192] = self.out_pieces_1 / 2
+        state[193] = self.out_pieces_0 / 2
+        state[194] = self.end_pieces_1 / self._NUM_CHECKERS
+        state[195] = self.end_pieces_0 / self._NUM_CHECKERS
+        state[196] = 1 - turn
+        state[197] = turn
+
+        return state
+
+
+def encode_point(n_checkers):
+    arr = np.zeros(4)
+    if n_checkers == 1:  # Blot
+        arr[0] = 1
+    if n_checkers >= 2:  # Made point
+        arr[1] = 1
+    if n_checkers == 3:
+        arr[2] = 1
+    if n_checkers > 3:
+        arr[3] = (n_checkers - 3) / 2
+    return arr
 
 
 def refine_position_to_move(position):
