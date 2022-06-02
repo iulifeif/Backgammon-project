@@ -6,8 +6,6 @@ import sys
 from Backgammon import Backgammon, click_for_position
 from Evaluation import Evaluation
 from Interface import Interface, choose_game_mode
-<<<<<<< Updated upstream
-=======
 from colors import *
 >>>>>>> Stashed changes
 
@@ -15,10 +13,6 @@ pygame.init()
 
 turns = 1
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 def play_game(number_of_turns):
     """ the part where it unfolds the logic and the interface of the game
         This is the primary function where the game is played,
@@ -132,10 +126,6 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 break
-<<<<<<< Updated upstream
-        number_of_turns, player = play_game()
-=======
         number_of_turns, player = play_game(1)
->>>>>>> Stashed changes
         ev = Evaluation(number_of_turns, player)
         ev.evaluate()
