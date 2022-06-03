@@ -410,6 +410,15 @@ class Backgammon:
                 # return position, position + self.fourth_dice
         return list_of_possible_moves
 
+    def won(self):
+        if self.end_pieces_1 == 10:
+            print("Player 1 WON!")
+            return 1
+        elif self.end_pieces_0 == 10:
+            print("Player 0 WON!")
+            return 0
+        return None
+
     def pc_piece_positions_for0(self):
         """ Search for a piece who can be moved with at least one dice, if the dice is valid
             Return:

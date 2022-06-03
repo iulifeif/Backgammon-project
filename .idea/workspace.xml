@@ -4,7 +4,10 @@
     <list default="true" id="25869791-cafa-4550-bcab-ade3d6b927c1" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
       <change beforePath="$PROJECT_DIR$/Backgammon.py" beforeDir="false" afterPath="$PROJECT_DIR$/Backgammon.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Game.py" afterDir="false" />
@@ -12,6 +15,9 @@
       <change beforePath="$PROJECT_DIR$/colors.py" beforeDir="false" afterPath="$PROJECT_DIR$/colors.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataset.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,9 +58,12 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../Licenta" />
     <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
 =======
+=======
+>>>>>>> Stashed changes
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
 >>>>>>> Stashed changes
@@ -176,6 +185,10 @@
     </configuration>
     <list>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+      <item itemvalue="Python.ai" />
+>>>>>>> Stashed changes
 =======
       <item itemvalue="Python.ai" />
 >>>>>>> Stashed changes

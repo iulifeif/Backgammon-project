@@ -7,7 +7,6 @@ from Backgammon import Backgammon, click_for_position
 from Evaluation import Evaluation
 from Interface import Interface, choose_game_mode
 from colors import *
->>>>>>> Stashed changes
 
 pygame.init()
 
@@ -101,23 +100,18 @@ def play_game(number_of_turns):
         interf.draw()
         if game.end_pieces_0 == 10 or game.end_pieces_1 == 10:
             break
-    # check who won
-    if game.end_pieces_1 == 10:
-        # print at the console
-        print("Player 1 WON!")
-        # print at the screen
+    # check who won, if someone won
+    someone_won = game.won()
+    if someone_won:
         font_title = pygame.font.SysFont("Roboto", 60)
-        text_title = font_title.render("Player 1 WON!", True, BLACK)
+        if someone_won == 0:
+            text = "Player White win!"
+        else:
+            text = "Player Black win!"
+        text_title = font_title.render(text, True, BLACK)
         interf.screen.blit(text_title, (50 * 4, 50 * 8))
         sleep(5)
-        return number_of_turns, 1
-    elif game.end_pieces_0 == 10:
-        print("Player 0 WON!")
-        font_title = pygame.font.SysFont("Roboto", 60)
-        text_title = font_title.render("Player 0 WON!", True, BLACK)
-        interf.screen.blit(text_title, (50 * 4, 50 * 8))
-        sleep(5)
-        return number_of_turns, 0
+        return number_of_turns, someone_won
 
 
 if __name__ == '__main__':
