@@ -1,13 +1,4 @@
-import random
-
-import pygame
-import sys
-
-from numpy.ma import copy
-
-from Backgammon import Backgammon
-from utils import load_sprite
-from colors import *
+from Imports import *
 
 
 class Interface:
@@ -88,6 +79,37 @@ class Interface:
             self.screen.blit(load_sprite("two_players_back", False), (0, 0))
         else:
             self.screen.blit(load_sprite("main_back", False), (0, 0))
+
+    def display_rules(self):
+        self.screen = pygame.display.set_mode((800, 800))
+        self.screen.fill(WHITE)
+        picture_number = 1
+        done = 0
+        while done == 0:
+            # display the image
+            print("rule" + str(picture_number))
+            self.screen.blit(load_sprite("rule"+str(picture_number), True), (0, 0))
+            # display the next button
+            pygame.draw.rect(self.screen, RED, [700, 700, 80, 40], border_radius=40)
+            # display the text for the button
+            font_title = pygame.font.SysFont("Roboto", 30)
+            print("6")
+            if picture_number < 5:
+                self.screen.blit(font_title.render("Next", True, WHITE), (715, 710))
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        col, line = event.pos
+                        if 700 <= col <= 800 and 700 <= line <= 800:
+                            picture_number += 1
+            else:
+                self.screen.blit(font_title.render("Done", True, WHITE), (715, 710))
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        col, line = event.pos
+                        # coords for Human
+                        if 700 <= col <= 800 and 700 <= line <= 800:
+                            done = 1
+            pygame.display.update()
 
     def preprocess_table(self):
         """ split the original table from logic (which is a list) in 2 lists
@@ -275,49 +297,69 @@ def choose_game_mode():
     # draw the table
     screen = pygame.display.set_mode((800, 800))
     screen.fill(BLACK)
-    font_title = pygame.font.SysFont("Roboto", 45)
-    text_title = font_title.render("Choose game mode: ", True, WHITE)
-    screen.blit(text_title, (800 / 5, 800 / 3))
+    # draw the banner name
+    sprite = load_sprite("banner", True)
+    blit_position = pygame.Vector2((200, 200))
+    screen.blit(sprite, blit_position)
+    # return the position if someone click
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            #         check if a mouse is clicked
+            # check if a mouse is clicked
             if event.type == pygame.MOUSEBUTTONDOWN:
                 col, line = event.pos
                 # coords for Human
-                if 320 <= col <= 560 and 355 <= line <= 405:
+                if 170 <= col <= 380 and 390 <= line <= 430:
                     # which means person
+                    print("1")
                     return 1
                 # coords for Computer
-                elif 320 <= col <= 580 and 455 <= line <= 505:
+                elif 420 <= col <= 610 and 390 <= line <= 430:
                     # which means computer
+                    print("2")
                     return 2
-                elif 320 <= col <= 580 and 555 <= line <= 605:
+                elif 290 <= col <= 510 and 470 <= line <= 510:
                     # which means computer
+                    print("3")
                     return 3
+                elif 350 <= col <= 440 and 590 <= line <= 630:
+                    # which means computer
+                    print("4")
+                    return 4
         col, line = pygame.mouse.get_pos()
-        if 320 <= col <= 560 and 355 <= line <= 405:
-            pygame.draw.rect(screen, DARK_SHADE, [320, 350, 230, 50], border_radius=40)
-        # coords for Computer
-        elif 320 <= col <= 580 and 455 <= line <= 505:
-            pygame.draw.rect(screen, DARK_SHADE, [320, 455, 260, 50], border_radius=40)
-        elif 320 <= col <= 580 and 555 <= line <= 605:
-            pygame.draw.rect(screen, DARK_SHADE, [320, 555, 290, 50], border_radius=40)
+        # draw the shades
+        # for human vs human
+        if 170 <= col <= 380 and 390 <= line <= 430:
+            pygame.draw.rect(screen, RED, [170, 390, 210, 40], border_radius=40)
+        # coords for human vs computer
+        elif 420 <= col <= 610 and 390 <= line <= 430:
+            pygame.draw.rect(screen, RED, [420, 390, 190, 40], border_radius=40)
+        # coords for computer vs computer
+        elif 290 <= col <= 510 and 470 <= line <= 510:
+            pygame.draw.rect(screen, RED, [290, 470, 220, 40], border_radius=40)
+        # coords for rules
+        elif 350 <= col <= 440 and 590 <= line <= 630:
+            pygame.draw.rect(screen, DARK_SHADE, [350, 590, 90, 40], border_radius=40)
         else:
-            pygame.draw.rect(screen, BLACK, [320, 350, 230, 50], border_radius=40)
-            pygame.draw.rect(screen, BLACK, [320, 455, 260, 50], border_radius=40)
-            pygame.draw.rect(screen, BLACK, [320, 555, 290, 50], border_radius=40)
+            #  erase the shades
+            pygame.draw.rect(screen, BLACK, [170, 390, 210, 40], border_radius=40)
+            pygame.draw.rect(screen, BLACK, [420, 390, 190, 40], border_radius=40)
+            pygame.draw.rect(screen, BLACK, [290, 470, 220, 40], border_radius=40)
+            pygame.draw.rect(screen, BLACK, [350, 590, 90, 40], border_radius=40)
         font_title = pygame.font.SysFont("Roboto", 30)
-        text = font_title.render("Human VS Human", True, WHITE)
-        screen.blit(text, (800 / 2 - 50,
-                           800 / 3 + 50 * 2))
-        text = font_title.render("Computer VS Human", True, WHITE)
-        screen.blit(text, (800 / 2 - 50,
-                           800 / 3 + 50 * 4))
-        text = font_title.render("Computer VS Computer", True, WHITE)
-        screen.blit(text, (800 / 2 - 50,
-                           800 / 3 + 50 * 6))
+        text = font_title.render("Play with a friend", True, WHITE)
+        screen.blit(text, (190, 400))
+        text = font_title.render("Play with Robot", True, WHITE)
+        screen.blit(text, (440, 400))
+        text = font_title.render("Watch how to play", True, WHITE)
+        screen.blit(text, (310, 480))
+        text = font_title.render("Rules", True, WHITE)
+        screen.blit(text, (370, 600))
 
         pygame.display.update()
+
+
+
+

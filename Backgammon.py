@@ -1,10 +1,4 @@
-import copy
-import random
-import sys
-
-import numpy
-import numpy as np
-import pygame
+from Imports import *
 
 
 class Backgammon:
@@ -56,6 +50,8 @@ class Backgammon:
         if self.first_dice == self.second_dice:
             self.third_dice = self.first_dice
             self.fourth_dice = self.first_dice
+        print("[player {}] [zaruri: {}, {}, {}, {}]".format(self.player, self.first_dice, self.second_dice,
+                                                            self.third_dice, self.fourth_dice))
 
     def end_game(self):
         """ check if one of the players has finished the game
@@ -155,8 +151,10 @@ class Backgammon:
         else:
             print("6")
             new_state.out_pieces_1 -= 1
-            dice = position + 1
-            if self.game_mode == 1:
+            if self.game_mode == 3 or self.game_mode == 2:
+                dice = position
+            elif self.game_mode == 1:
+                dice = position + 1
                 position += 1
             # if at the position are pieces of the same kind or None
             if new_state.table[position] <= 0:
@@ -261,13 +259,15 @@ class Backgammon:
                 # click to select the piece which i want to be moved
                 position_start = click_for_position()
                 position_start, up_or_down = refine_position_to_move(position_start)
-                interf.update_clicked_piece(position_start, up_or_down)
-                interf.draw()
+                if interf:
+                    interf.update_clicked_piece(position_start, up_or_down)
+                    interf.draw()
                 # click to select the position where to move the piece
                 position_end = click_for_position()
                 position_end, up_or_down = refine_position_to_move(position_end)
-                interf.update_clicked_piece(-1, "up")
-                interf.draw()
+                if interf:
+                    interf.update_clicked_piece(-1, "up")
+                    interf.draw()
                 # verifications
                 if position_start - position_end > 6 and position_end > 0:
                     print("Difference is too big! Click again!")
@@ -323,13 +323,14 @@ class Backgammon:
             else:
                 new_state.out_pieces_0 += 1
         else:
+            print("[error move] 1")
             return None
 
         # calculate the dice used
         if end_position > 23 or end_position < 0:
-            dices = [self.first_dice, self.second_dice, self.third_dice, self.fourth_dice]
+            dices = [new_state.first_dice, new_state.second_dice, new_state.third_dice, new_state.fourth_dice]
             dices.sort()
-            if self.player == 1:
+            if new_state.player == 1:
                 for dice in dices:
                     if 24 - start_position == dice:
                         break
@@ -344,8 +345,7 @@ class Backgammon:
                     if start_position + 1 < dice:
                         break
 
-        else:
-            dice = abs(end_position - start_position)
+        dice = abs(end_position - start_position)
 
         # cancel the dice who was used
         if new_state.first_dice == dice and new_state.first_dice:
@@ -361,9 +361,8 @@ class Backgammon:
             print("s-a consumat zarul4 ", new_state.fourth_dice)
             new_state.fourth_dice = 0
         else:
+            print("[error move] 2")
             return None
-
-        # return the new state, after all these modifications
         return new_state
 
     def calculate_points(self):
@@ -392,21 +391,24 @@ class Backgammon:
                 the position to which you want to move the piece"""
         list_of_possible_moves = []
         for position in range(len(self.table)):
-            if self.table[position] <= -1 and self.first_dice and \
+            if self.table[position] <= -1 and self.first_dice and position + self.first_dice < 24 and\
                     self.table[position + self.first_dice] <= 1:
                 list_of_possible_moves.append((position, position + self.first_dice))
                 # return position, position + self.first_dice
-            elif self.table[position] <= -1 and self.second_dice and \
+            if self.table[position] <= -1 and self.second_dice and position + self.second_dice < 24 and \
                     self.table[position + self.second_dice] <= 1:
-                list_of_possible_moves.append((position, position + self.second_dice))
+                if (position, position + self.second_dice) not in list_of_possible_moves:
+                    list_of_possible_moves.append((position, position + self.second_dice))
                 # return position, position + self.second_dice
-            elif self.table[position] <= -1 and self.third_dice and \
+            if self.table[position] <= -1 and self.third_dice and position + self.third_dice < 24 and \
                     self.table[position + self.third_dice] <= 1:
-                list_of_possible_moves.append((position, position + self.third_dice))
+                if (position, position + self.third_dice) not in list_of_possible_moves:
+                    list_of_possible_moves.append((position, position + self.third_dice))
                 # return position, position + self.third_dice
-            elif self.table[position] <= -1 and self.fourth_dice and \
+            if self.table[position] <= -1 and self.fourth_dice and position + self.fourth_dice < 24 and\
                     self.table[position + self.fourth_dice] <= 1:
-                list_of_possible_moves.append((position, position + self.fourth_dice))
+                if (position, position + self.fourth_dice) not in list_of_possible_moves:
+                    list_of_possible_moves.append((position, position + self.fourth_dice))
                 # return position, position + self.fourth_dice
         return list_of_possible_moves
 
