@@ -4,9 +4,8 @@ import random
 import pygame
 import sys
 import numpy as np
-from pygame import surface
 
-from utils import load_sprite
+from utils.utils import load_sprite
 
 pygame.init()
 

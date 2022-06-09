@@ -1,5 +1,5 @@
 from Board import Board
-from Imports import *
+from utils.Imports import *
 
 
 class Model:
@@ -31,8 +31,9 @@ class Model:
         if restore_path is not None:
             self.load(restore_path)
 
-    def train(self, n_episodes=100, n_validation=500, n_checkpoint=50, n_tests=10):
+    def train(self, n_episodes=5000, n_validation=500, n_checkpoint=500, n_tests=1000):
         """Trains the model.
+
 
         Arguments:
         n_episodes -- number of episodes to train (default 5000)
@@ -199,7 +200,7 @@ class Model:
             while game.need_to_put_in_house() and game.can_put_in_house():
                 print("[2]house")
                 if not game.player:
-                    position_home = game.pc_house_position_for0()
+                    position_home = game.choose_house_position_pc_player_0()
                     game_copy = game.add_in_house(position_home)
                 else:
                     board = Board(game.table,
@@ -219,9 +220,8 @@ class Model:
                 else:
                     print("table: ", game.table)
                     print("Calculatorul a dat o mutare gresita")
-                    return 0
-            while game.can_move() and (game.first_dice != 0 or game.second_dice != 0 or
-                                       game.third_dice != 0 or game.fourth_dice != 0):
+                    break
+            while game.can_move():
                 print("[3]move")
                 if game.player:
                     board = Board(game.table,
@@ -243,12 +243,12 @@ class Model:
                     print("[NONE] new state")
                     print("[table]: {}".format(game.table))
                     print("[start_end] {} {} ;  table[start]: {}, table[end]: {}".format(position_start, position_end, game.table[position_start], game.table[position_start+dice_used]))
-                    return 0
+                    break
             print("[4]done move")
             # turn is over and switch the player
             game.switch_player()
             turns += 1
-            if game.end_pieces_0 == 10 or game.end_pieces_1 == 10:
+            if game.end_pieces_0 == 15 or game.end_pieces_1 == 15:
                 break
         # check who won, if someone won
         someone_won = game.won()

@@ -1,4 +1,4 @@
-from Imports import *
+from utils.Imports import *
 
 pygame.init()
 
@@ -41,5 +41,6 @@ def main(args):
 
 if __name__ == "__main__":
     # main(parse_args())
-    m = Model()
-    m.train()
+    # m = Model()
+    # m.train()
+    choose_game_mode()

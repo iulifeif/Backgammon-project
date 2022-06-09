@@ -1,4 +1,4 @@
-from Imports import *
+from utils.Imports import *
 
 PLAYER_X = 1
 PLAYER_O = 0

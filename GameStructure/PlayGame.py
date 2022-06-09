@@ -1,4 +1,4 @@
-from Imports import *
+from utils.Imports import *
 
 
 def play_game():
@@ -6,7 +6,9 @@ def play_game():
         This is the primary function where the game is played,
         pieces are added to the house, moves are made, and at the end it is displayed who won,
         and all these are displayed in the interface"""
+
     # create class instances so as to use them
+
     number_of_turns = 0
     game_mode = choose_game_mode()
     game = Backgammon(game_mode)
@@ -32,7 +34,6 @@ def play_game():
             if 740 <= col and line <= 520:
                 game.roll_dice()
 
-
         interf.update_dice(game.first_dice, game.second_dice, game.third_dice, game.fourth_dice)
         interf.draw()
         # if the player has pieces outside the table and can put them in the house
@@ -43,9 +44,9 @@ def play_game():
                 position_home = click_for_position()
             elif (game.game_mode == 2 and game.player == 1) or game.game_mode == 3:
                 if game.player == 0:
-                    position_home = game.pc_house_position_for0()
+                    position_home = game.choose_house_position_pc_player_0()
                 else:
-                    position_home = game.pc_house_position_for1()
+                    position_home = game.choose_house_position_pc_player_1()
             game_copy = game.add_in_house(position_home)
             if game_copy is not None:
                 game = game_copy
@@ -58,8 +59,7 @@ def play_game():
                 print("NU POT BAGA IN CASA IS NONE")
             if (game.game_mode == 2 and game.player == 1) or game.game_mode == 3:
                 sleep(1.5)
-        while game.can_move() and (game.first_dice != 0 or game.second_dice != 0 or
-                                   game.third_dice != 0 or game.fourth_dice != 0):
+        while game.can_move():
             print("zarurile: ", game.first_dice, game.second_dice, game.third_dice, game.fourth_dice)
             position_start, position_end = game.return_positions_for_movement(interf)
             print("pozitia de start si end sunt: ", position_start, position_end)
