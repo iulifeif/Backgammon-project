@@ -1,4 +1,11 @@
+from time import sleep
+
+import pygame
+
+from GameStructure.Backgammon import Backgammon, click_for_position
+from GameStructure.Interface import choose_game_mode, Interface
 from utils.Imports import *
+from utils.colors import *
 
 
 def play_game():
