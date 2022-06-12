@@ -1,6 +1,7 @@
 import sys
 
 from GameStructure.Backgammon import Backgammon, play_sound
+from Menu import login_menu
 from utils.colors import  *
 import pygame
 
@@ -339,7 +340,11 @@ def choose_game_mode():
                 elif 400 <= col <= 500 and 590 <= line <= 630:
                     # which means computer
                     print("5")
-                    return 5
+                    login_menu()
+                    screen.fill(BLACK)
+                    sprite = load_sprite("banner", True)
+                    blit_position = pygame.Vector2((200, 200))
+                    screen.blit(sprite, blit_position)
         col, line = pygame.mouse.get_pos()
         # draw the shades
         # for human vs human

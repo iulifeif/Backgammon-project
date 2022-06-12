@@ -4,10 +4,8 @@ import logging
 import pygame
 from keras import Model
 
-from GameStructure.Interface import choose_game_mode, login_user, login2
 from GameStructure.PlayGame import play_game
 from utils.Evaluation import Evaluation
-from utils.Imports import *
 
 pygame.init()
 
@@ -49,8 +47,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # main(parse_args())
+    main(parse_args())
     # m = Model()
     # m.train()
-    # choose_game_mode()
-    login2()
