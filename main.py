@@ -4,6 +4,7 @@ import logging
 import pygame
 from keras import Model
 
+from GameStructure.Interface import choose_game_difficulty
 from GameStructure.PlayGame import play_game
 from utils.Evaluation import Evaluation
 
@@ -48,5 +49,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(parse_args())
-    # m = Model()
-    # m.train()

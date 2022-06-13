@@ -1,12 +1,13 @@
 import copy
 import logging
+import os
 from time import time
 
 import numpy as np
 import tf
 
-from Board import Board
 from GameStructure.Backgammon import Backgammon
+from Train.Board import Board
 from utils.Imports import *
 
 
@@ -79,7 +80,7 @@ class Model:
 
             logging.info("game complete [model wins %d] [episodes %d]", player, episode)
 
-        logging.info("test complete [model win ratio %f]", wins / n_episodes)
+        logging.info("test complete [model win ratio %f]", (wins / n_episodes)*100)
 
     def action(self, board, roll, player):
         """Predicts the optimal move given the current state.
@@ -181,7 +182,6 @@ class Model:
         if not os.path.exists('checkpoint'):
             os.mkdir('checkpoint')
 
-        # directory = 'checkpoint/model-' + str(datetime.datetime.now().strftime("%Y-%m-%d-%H.%M.%S"))
         directory = 'checkpoint/model-0'
         if not os.path.exists(directory):
             os.mkdir(directory)
@@ -203,21 +203,14 @@ class Model:
         turns = 0
         while True:
             game.roll_dice()
-            print("[1]while")
             # if the player has pieces outside the table and can put them in the house
             while game.need_to_put_in_house() and game.can_put_in_house():
-                print("[2]house")
-                if not game.player:
-                    position_home = game.choose_house_position_pc_player_0()
-                    game_copy = game.add_in_house(position_home)
-                else:
-                    board = Board(game.table,
-                                  game.out_pieces_1, game.out_pieces_0,
-                                  game.end_pieces_1, game.out_pieces_0)
-                    rolls = [game.first_dice, game.second_dice, game.third_dice, game.fourth_dice]
-                    _bar, position_home = self.action(board, rolls, game.player)
-                    self.update(board, game.player)
-                    game_copy = game.add_in_house(position_home-1)
+                board = Board(game.table, game.out_pieces_1, game.out_pieces_0,
+                              game.end_pieces_1, game.out_pieces_0)
+                rolls = [game.first_dice, game.second_dice, game.third_dice, game.fourth_dice]
+                _bar, position_home = self.action(board, rolls, game.player)
+                self.update(board, game.player)
+                game_copy = game.add_in_house(position_home - 1)
                 # update map
                 if game_copy is not None:
                     game = game_copy
@@ -231,26 +224,24 @@ class Model:
                     break
             while game.can_move():
                 print("[3]move")
-                if game.player:
-                    board = Board(game.table,
-                                  game.out_pieces_1, game.out_pieces_0,
-                                  game.end_pieces_1, game.out_pieces_0)
-                    print("[table]: {}".format(game.table))
-                    rolls = [game.first_dice, game.second_dice, game.third_dice, game.fourth_dice]
-                    position_start, dice_used = self.action(board, rolls, game.player)
-                    self.update(board, game.player)
-                    print("zaruri [robot]: ", game.first_dice, game.second_dice, game.third_dice, game.fourth_dice)
-                    print("[POSITIONS]: ", position_start, position_start+dice_used)
-                    new_state = game.move(position_start, position_start + dice_used)
-                else:
-                    position_start, position_end = game.return_positions_for_movement(0)
-                    new_state = game.move(position_start, position_end)
+                board = Board(game.table, game.out_pieces_1, game.out_pieces_0,
+                              game.end_pieces_1, game.out_pieces_0)
+                print("[table]: {}".format(game.table))
+                rolls = [game.first_dice, game.second_dice, game.third_dice, game.fourth_dice]
+                position_start, dice_used = self.action(board, rolls, game.player)
+                self.update(board, game.player)
+                print("zaruri [robot]: ", game.first_dice, game.second_dice, game.third_dice, game.fourth_dice)
+                print("[POSITIONS]: ", position_start, position_start + dice_used)
+                new_state = game.move(position_start, position_start + dice_used)
                 if new_state is not None:
                     game = new_state
                 else:
                     print("[NONE] new state")
                     print("[table]: {}".format(game.table))
-                    print("[start_end] {} {} ;  table[start]: {}, table[end]: {}".format(position_start, position_end, game.table[position_start], game.table[position_start+dice_used]))
+                    print("[start_end] {} ;  table[start]: {}, table[end]: {}".format(position_start,
+                                                                                         game.table[position_start],
+                                                                                         game.table[
+                                                                                             position_start + dice_used]))
                     break
             print("[4]done move")
             # turn is over and switch the player

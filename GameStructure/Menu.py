@@ -103,11 +103,12 @@ def login_menu():
                     response = database_login(input_box1.text, input_box2.text)
                     pg.draw.rect(screen, BLACK, [290, 620, 200, 30], border_radius=30)
                     pg.display.flip()
-                    if response is True:
-                        screen.blit(FONT_errors.render("Now you are logged in!", True, WHITE), (220, 620))
+                    if response is not False:
+                        screen.blit(FONT_errors.render("Now you are logged in!", True, WHITE), (260, 620))
                         pg.display.flip()
                         sleep(4)
-                        return 0
+                        print("userul este: ", response)
+                        return response
                     screen.blit(FONT_errors.render("Your username or password are not valid!", True, WHITE),(220, 620))
                     pg.display.flip()
                     sleep(4)
@@ -162,7 +163,7 @@ def register_menu():
         for box in input_boxes:
             box.update()
 
-        screen.fill((30, 30, 30))
+        screen.fill(BLACK)
         for box in input_boxes:
             box.draw(screen, "register")
 
@@ -185,7 +186,7 @@ def database_login(username, password):
     item_details = collection_name.find()
     for item in item_details:
         if item["username"] == username and check_password_hash(item["password"], password):
-            return True
+            return item
     return False
 
 
@@ -198,7 +199,3 @@ def insert_register(username, password):
                  "games_total": 0}
     collection_name.insert_one(user_data)
     return True
-
-# if __name__ == '__main__':
-#     login_menu()
-#     pg.quit()

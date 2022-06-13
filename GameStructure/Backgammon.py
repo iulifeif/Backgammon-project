@@ -4,8 +4,8 @@ import sys
 
 import numpy as np
 import pygame
-
-from utils.Imports import *
+from Train.RN import Model
+from Train.Board import Board
 
 
 class Backgammon:
@@ -136,50 +136,38 @@ class Backgammon:
             None: in case of error"""
         # create a copy for actual state
         play_sound(1)
-        print("1")
         if position is None:
             return None
         if (self.game_mode == 1 or self.player == 0) and self.game_mode != 3:
             position, line = refine_position_to_move(position)
-        print("positia la care intra in casa: ", position)
         new_state = Backgammon(self.game_mode, self.player, self.table,
                                self.first_dice, self.second_dice, self.third_dice, self.fourth_dice,
                                self.end_pieces_0, self.end_pieces_1,
                                self.out_pieces_0, self.out_pieces_1)
         # check the player to save the sign on the piece (positive or negative)
         if new_state.player == 0:
-            print("2")
             new_state.out_pieces_0 -= 1
             dice = 24 - position
             # if at the position are pieces of the same kind or None
             if new_state.table[position] >= 0:
                 new_state.table[position] += 1
-                print("3")
             # if it is a single piece of the other color
             elif new_state.table[position] == -1:
-                print("4")
                 new_state.table[position] = 1
                 new_state.out_pieces_1 += 1
             else:
-                print("5")
                 return None
         else:
-            print("6")
             new_state.out_pieces_1 -= 1
             dice = position + 1
-            if self.game_mode == 1:
-                position += 1
             # if at the position are pieces of the same kind or None
             if new_state.table[position] <= 0:
-                print("7")
                 new_state.table[position] += -1
             # if it is a single piece of the other color
             elif new_state.table[position] == 1:
-                print("8")
                 new_state.table[position] = -1
                 new_state.out_pieces_0 += 1
             else:
-                print("9")
                 return None
         # cancel the dice who was used
         if new_state.first_dice and new_state.first_dice == dice:
@@ -304,14 +292,26 @@ class Backgammon:
                 return True
             return False
 
-    def return_positions_for_movement(self, interf):
+    def return_positions_for_movement(self, interf, game_difficulty):
         position_start = position_end = -1
         while position_start == -1:
             if (self.game_mode == 2 and self.player == 1) or self.game_mode == 3:
-                if self.player == 0:
-                    position_start, position_end = self.choose_move_for_pc_player_0()
+                if game_difficulty == 2 or self.game_mode == 3:
+                    m = Model()
+                    board = Board(self.table, self.out_pieces_1, self.out_pieces_0,
+                                  self.end_pieces_1, self.out_pieces_0)
+                    rolls = [self.first_dice, self.second_dice, self.third_dice, self.fourth_dice]
+                    position_start, dice_used = m.action(board, rolls, self.player)
+                    m.update(board, self.player)
+                    if self.player == 0:
+                        position_end = position_start - dice_used
+                    else:
+                        position_end = position_start + dice_used
                 else:
-                    position_start, position_end = self.choose_move_for_pc_player_1()
+                    if self.player == 0:
+                        position_start, position_end = self.choose_move_for_pc_player_0()
+                    else:
+                        position_start, position_end = self.choose_move_for_pc_player_1()
             else:
                 # click to select the piece which i want to be moved
                 position_start = click_for_position()
@@ -647,11 +647,9 @@ def refine_position_to_move(position):
 
 
 def click_for_position():
-    """this function waits to receive a click to take the coordinates and turn them into position on the logic table
-        Args:
-            interf(obj): object for interface to call class variables
+    """this function waits to receive a click to take the coordinates and turn them into position
         Return:
-            the position in the table from logic part corresponding to the coordinates where was clicked"""
+            the position that was clicked"""
     # wait until receive the first click
     mouse = -1
     while mouse == -1:
@@ -663,15 +661,14 @@ def click_for_position():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-    print("clicked psoition: ", mouse)
+    print("clicked position: ", mouse)
     return mouse
 
 
 def play_sound(sound_number):
-    roll_sound = pygame.mixer.Sound("../assets/roll-dice.mp3")
-    click_sound = pygame.mixer.Sound("../assets/click2.wav")
-    next_turn = pygame.mixer.Sound("../assets/next_turn.wav")
-    print(sound_number)
+    roll_sound = pygame.mixer.Sound("./assets/roll-dice.mp3")
+    click_sound = pygame.mixer.Sound("./assets/click2.wav")
+    next_turn = pygame.mixer.Sound("./assets/next_turn.wav")
     if sound_number == 1:
         click_sound.play()
     elif sound_number == 2:
