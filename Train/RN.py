@@ -1,12 +1,14 @@
 import copy
-import datetime
 import logging
 import os
-import time
-import numpy as np
-import tensorflow as tf
+from time import time
 
-from main import play_game
+import numpy as np
+import tf
+
+from GameStructure.Backgammon import Backgammon
+from Train.Board import Board
+from utils.Imports import *
 
 
 class Model:
@@ -17,7 +19,7 @@ class Model:
     _LAMBDA = 0.7
     _ALPHA = 0.1
 
-    def __init__(self, back_game, restore_path=None):
+    def __init__(self, restore_path=None):
         """Construct a model with random weights.
 
         Arguments:
@@ -31,8 +33,8 @@ class Model:
 
         # Lazily initialize trace once the shape of the gradients is known.
         self._trace = []
-        self.game = copy.deepcopy(back_game)
-        self._state = tf.Variable(self.game.table.encode_state(0))
+        self.game_state = Backgammon(3)
+        self._state = tf.Variable(self.game_state.encode_state(0))
         self._value = tf.Variable(self._model(self._state[np.newaxis]))
 
         if restore_path is not None:
@@ -40,6 +42,7 @@ class Model:
 
     def train(self, n_episodes=5000, n_validation=500, n_checkpoint=500, n_tests=1000):
         """Trains the model.
+
 
         Arguments:
         n_episodes -- number of episodes to train (default 5000)
@@ -56,7 +59,7 @@ class Model:
                 self.test(n_tests)
             if episode > 1 and episode % n_checkpoint == 0:
                 self.save()
-            play_game()
+            number_of_turns, who_won = self.fast_game()
             self._reset_trace()
 
         self.save()
@@ -70,14 +73,14 @@ class Model:
         logging.info("testing model [n_episodes = %d]", n_episodes)
         wins = 0
         for episode in range(1, n_episodes + 1):
-            number_of_moves, player = play_game()
+            number_of_moves, player = self.fast_game()
 
             if player:
                 wins += 1
 
-            logging.info("game complete [model wins %d] [episodes %d]", wins, episode)
+            logging.info("game complete [model wins %d] [episodes %d]", player, episode)
 
-        logging.info("test complete [model win ratio %f]", wins / n_episodes)
+        logging.info("test complete [model win ratio %f]", (wins / n_episodes)*100)
 
     def action(self, board, roll, player):
         """Predicts the optimal move given the current state.
@@ -91,15 +94,15 @@ class Model:
         roll -- list of dice rolls left in the players turn
         player -- number of the player
         """
-        start = time.time()
+        start = time()
 
         max_move = None
         max_prob = -np.inf
-        permitted = self.game.pc_piece_positions()
+        permitted = board.permitted_moves(roll, player)
+        print("[PERMITED] ", permitted)
         for move in permitted:
-            start_position, end_position = move
             afterstate = copy.deepcopy(board)
-            if not afterstate.move(start_position, end_position):
+            if not afterstate.move(*move, player):
                 logging.error("model requested an invalid move")
                 continue
 
@@ -114,16 +117,16 @@ class Model:
                 max_move = move
 
         if self._state is None:
-            self._state = tf.Variable(self.game.table.encode_state(player))
+            self._state = tf.Variable(board.encode_state(player))
         if self._value is None:
             self._value = tf.Variable(self._model(self._state[np.newaxis]))
 
-        duration = time.time() - start
-        logging.debug("playing move [player = %d] [move = %s] [winning prob = %f] [duration = %ds]", player,
-                      str(max_move), max_prob, duration)
+        duration = time() - start
+        logging.debug("playing move [player = %d] [move = %s] [winning prob = %f] [duration = %ds]",
+                      self.game_state.player, str(max_move), max_prob, duration)
         return max_move
 
-    def update(self, winner, player):
+    def update(self, board, player):
         """Updates the model given the current state and reward.
 
         This is expected to be called after the player has made their move.
@@ -135,9 +138,9 @@ class Model:
         board -- board containing the game state
         roll -- list of dice rolls left in the players turn
         """
-        start = time.time()
+        start = time()
 
-        x_next = self.game.table.encode_state(player)
+        x_next = board.encode_state(player)
         with tf.GradientTape() as tape:
             value_next = self._model(x_next[np.newaxis])
 
@@ -151,7 +154,7 @@ class Model:
                     tf.zeros(grad.get_shape()), trainable=False
                 ))
 
-        if player == 0 and winner:
+        if player == 0 and board.won(player):
             reward = 1
         else:
             reward = 0
@@ -166,7 +169,7 @@ class Model:
         self._state = tf.Variable(x_next)
         self._value = tf.Variable(value_next)
 
-        duration = time.time() - start
+        duration = time() - start
         logging.debug("updating model [player = %d] [duration = %ds]", player, duration)
 
     def load(self, path):
@@ -179,7 +182,7 @@ class Model:
         if not os.path.exists('checkpoint'):
             os.mkdir('checkpoint')
 
-        directory = 'checkpoint/model-' + str(datetime.datetime.now()).replace(' ', '_')
+        directory = 'checkpoint/model-0'
         if not os.path.exists(directory):
             os.mkdir(directory)
 
@@ -193,3 +196,59 @@ class Model:
     def _reset_trace(self):
         for i in range(len(self._trace)):
             self._trace[i].assign(tf.zeros(self._trace[i].get_shape()))
+
+    def fast_game(self):
+        game_mode = 3
+        game = Backgammon(game_mode)
+        turns = 0
+        while True:
+            game.roll_dice()
+            # if the player has pieces outside the table and can put them in the house
+            while game.need_to_put_in_house() and game.can_put_in_house():
+                board = Board(game.table, game.out_pieces_1, game.out_pieces_0,
+                              game.end_pieces_1, game.out_pieces_0)
+                rolls = [game.first_dice, game.second_dice, game.third_dice, game.fourth_dice]
+                _bar, position_home = self.action(board, rolls, game.player)
+                self.update(board, game.player)
+                game_copy = game.add_in_house(position_home - 1)
+                # update map
+                if game_copy is not None:
+                    game = game_copy
+                elif game_copy is None and game.player == 1:
+                    print("table: ", game.table)
+                    print("ROBOTUL nu are mutari valide")
+                    break
+                else:
+                    print("table: ", game.table)
+                    print("Calculatorul a dat o mutare gresita")
+                    break
+            while game.can_move():
+                print("[3]move")
+                board = Board(game.table, game.out_pieces_1, game.out_pieces_0,
+                              game.end_pieces_1, game.out_pieces_0)
+                print("[table]: {}".format(game.table))
+                rolls = [game.first_dice, game.second_dice, game.third_dice, game.fourth_dice]
+                position_start, dice_used = self.action(board, rolls, game.player)
+                self.update(board, game.player)
+                print("zaruri [robot]: ", game.first_dice, game.second_dice, game.third_dice, game.fourth_dice)
+                print("[POSITIONS]: ", position_start, position_start + dice_used)
+                new_state = game.move(position_start, position_start + dice_used)
+                if new_state is not None:
+                    game = new_state
+                else:
+                    print("[NONE] new state")
+                    print("[table]: {}".format(game.table))
+                    print("[start_end] {} ;  table[start]: {}, table[end]: {}".format(position_start,
+                                                                                         game.table[position_start],
+                                                                                         game.table[
+                                                                                             position_start + dice_used]))
+                    break
+            print("[4]done move")
+            # turn is over and switch the player
+            game.switch_player()
+            turns += 1
+            if game.end_pieces_0 == 15 or game.end_pieces_1 == 15:
+                break
+        # check who won, if someone won
+        someone_won = game.won()
+        return turns, someone_won

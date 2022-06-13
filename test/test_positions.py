@@ -4,9 +4,8 @@ import random
 import pygame
 import sys
 import numpy as np
-from pygame import surface
 
-from utils import load_sprite
+from utils.utils import load_sprite
 
 pygame.init()
 
@@ -75,52 +74,108 @@ def draw_board(board, table):
     # draw_pieces(down_table, 14)
 
 
+def end_game(player_who_won):
+    screen = pygame.display.set_mode((800, 800))
+    screen.fill(BLACK)
+    sprite = load_sprite("banner", True)
+    blit_position = pygame.Vector2((200, 200))
+    screen.blit(sprite, blit_position)
+    # return the position if someone click
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            # check if a mouse is clicked
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                col, line = event.pos
+                if 300 <= col <= 390 and 590 <= line <= 630:
+                    print("4")
+                    return 4
+                elif 400 <= col <= 500 and 590 <= line <= 630:
+                    print("5")
+        col, line = pygame.mouse.get_pos()
+        # draw the shades
+        # for human vs human
+        if 310 <= col <= 460 and 540 <= line <= 580:
+            pygame.draw.rect(screen, RED, [310, 540, 150, 40], border_radius=30)
+        # coords for human vs computer
+        elif 360 <= col <= 425 and 590 <= line <= 630:
+            pygame.draw.rect(screen, RED, [360, 590, 65, 40], border_radius=30)
+        else:
+            #  erase the shades
+            pygame.draw.rect(screen, BLACK, [310, 540, 150, 40], border_radius=30)
+            pygame.draw.rect(screen, BLACK, [360, 590, 65, 40], border_radius=30)
+        font_announce = pygame.font.SysFont("Roboto", 40)
+        font_title = pygame.font.SysFont("Roboto", 30)
+        if player_who_won == 0:
+            text = font_announce.render("Player WHITE won!! Congrats!!", True, WHITE)
+        else:
+            text = font_announce.render("Player BLACK won!! Congrats!!", True, WHITE)
+        screen.blit(text, (180, 400))
+        text = font_title.render("Back to Menu", True, WHITE)
+        screen.blit(text, (320, 550))
+        text = font_title.render("Exit", True, WHITE)
+        screen.blit(text, (372, 600))
+
+        pygame.display.update()
+
+
 if __name__ == '__main__':
 
-    font = pygame.font.Font(None, 28)
-
-    # infinite loop
-    table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
-    screen = pygame.display.set_mode(size)
-    game_over = False
-    board = create_board()
-    draw_board(board, table)
-    # partea de sus
-    sprite = load_sprite("black_got", True)
+    selected_piece = 0
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print(event.pos)
+        end_game(1)
+    # font = pygame.font.Font(None, 28)
+    #
+    # # infinite loop
+    # table = [2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0, 0, -2]
+    # screen = pygame.display.set_mode(size)
+    # game_over = False
+    # board = create_board()
+    # draw_board(board, table)
+    # # partea de sus
+    # sprite = load_sprite("black_got", True)
     # blit_position = pygame.Vector2((680, 135))
     # screen.blit(sprite, blit_position)
     # blit_position = pygame.Vector2((630, 135))
     # screen.blit(sprite, blit_position)
     # blit_position = pygame.Vector2((680, 180))
     # screen.blit(sprite, blit_position)
-    # blit_position = pygame.Vector2((680-12*50, 135))
+    # blit_position = pygame.Vector2((680 - 12 * 50, 135))
     # screen.blit(sprite, blit_position)
-    # partea de jos
-    sprite = load_sprite("white_got", True)
+    # # partea de jos
+    # sprite = load_sprite("white_got", True)
     # blit_position = pygame.Vector2((680, 730))
     # screen.blit(sprite, blit_position)
     # blit_position = pygame.Vector2((680, 685))
     # screen.blit(sprite, blit_position)
     # blit_position = pygame.Vector2((630, 730))
     # screen.blit(sprite, blit_position)
-    # blit_position = pygame.Vector2((680-12*50, 730))
+    # blit_position = pygame.Vector2((680 - 12 * 50, 730))
     # screen.blit(sprite, blit_position)
-    # piesele de pe mijloc
-    blit_position = pygame.Vector2((380, 300))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((380, 350))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((380, 570))
-    screen.blit(sprite, blit_position)
-    blit_position = pygame.Vector2((380, 520))
-    screen.blit(sprite, blit_position)
-    # player turn
+    # # piesele de pe mijloc
+    # blit_position = pygame.Vector2((380, 300))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((380, 350))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((380, 570))
+    # screen.blit(sprite, blit_position)
+    # blit_position = pygame.Vector2((380, 520))
+    # screen.blit(sprite, blit_position)
+    # # player turn
     # sprite = load_sprite("turn_light", True)
     # blit_position = pygame.Vector2((287, 1))
     # screen.blit(sprite, blit_position)
     # blit_position = pygame.Vector2((430, 1))
     # screen.blit(sprite, blit_position)
-    # unde muta playerul sus
+    # # unde muta playerul sus
     # sprite = load_sprite("destination_light", True)
     # blit_position = pygame.Vector2((72, 115))
     # screen.blit(sprite, blit_position)
@@ -128,20 +183,20 @@ if __name__ == '__main__':
     # screen.blit(sprite, blit_position)
     # blit_position = pygame.Vector2((272, 115))
     # screen.blit(sprite, blit_position)
-    # unde muta playerul jos
+    # # unde muta playerul jos
     # sprite = load_sprite("destination_light_bottom", True)
     # blit_position = pygame.Vector2((222, 500))
     # screen.blit(sprite, blit_position)
     # blit_position = pygame.Vector2((272, 500))
     # screen.blit(sprite, blit_position)
-    # dice roll
+    # # dice roll
     # sprite = load_sprite("dice_button", True)
     # blit_position = pygame.Vector2((743, 382))
     # screen.blit(sprite, blit_position)
-    # dice
+    # # dice
     # dice1 = str(random.randint(1, 6))
     # dice2 = str(random.randint(1, 6))
-    # sprite = load_sprite("white_dice_"+dice1, True)
+    # sprite = load_sprite("white_dice_" + dice1, True)
     # blit_position = pygame.Vector2((450, 390))
     # screen.blit(sprite, blit_position)
     # sprite = load_sprite("white_dice_" + dice1, True)
@@ -153,8 +208,8 @@ if __name__ == '__main__':
     # sprite = load_sprite("white_dice_" + dice1, True)
     # blit_position = pygame.Vector2((500, 450))
     # screen.blit(sprite, blit_position)
-    # piesele scoase afara
-    # negre
+    # # piesele scoase afara
+    # # negre
     # sprite = load_sprite("black_beard_off", True)
     # blit_position = pygame.Vector2((750, 344))
     # screen.blit(sprite, blit_position)
@@ -164,7 +219,7 @@ if __name__ == '__main__':
     # sprite = load_sprite("black_beard_off", True)
     # blit_position = pygame.Vector2((750, 366))
     # screen.blit(sprite, blit_position)
-    # albe
+    # # albe
     # sprite = load_sprite("white_beard_off", True)
     # blit_position = pygame.Vector2((750, 733))
     # screen.blit(sprite, blit_position)
@@ -174,13 +229,16 @@ if __name__ == '__main__':
     # sprite = load_sprite("white_beard_off", True)
     # blit_position = pygame.Vector2((750, 755))
     # screen.blit(sprite, blit_position)
-
-    selected_piece = 0
-    while not game_over:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                print(event.pos)
-            pygame.display.update()
+    #
+    # # draw end game
+    # end_game()
+    #
+    # selected_piece = 0
+    # while not game_over:
+    #     for event in pygame.event.get():
+    #         if event.type == pygame.QUIT:
+    #             game_over = True
+    #             sys.exit()
+    #         if event.type == pygame.MOUSEBUTTONDOWN:
+    #             print(event.pos)
+    #         pygame.display.update()
